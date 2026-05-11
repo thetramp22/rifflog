@@ -7,4 +7,5 @@ type SessionsRequest struct {
 	DurationMinutes int       `json:"duration_minutes"`
 	PracticedAt     time.Time `json:"practiced_at"`
 	Notes           string    `json:"notes"`
+	UserID          int       `json:"user_id"`
 }
