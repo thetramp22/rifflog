@@ -2,11 +2,13 @@ package services
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/thetramp22/rifflog/internal/models"
 	"github.com/thetramp22/rifflog/internal/repository"
 )
+
+var ErrInvalidDuration = errors.New("Duration must be greater than zero")
 
 type PracticeSessionService struct {
 	Repo *repository.PracticeSessionRepository
@@ -36,5 +38,5 @@ func validateDuration(duration int) error {
 	if duration > 0 {
 		return nil
 	}
-	return fmt.Errorf("Duration must be greater than zero")
+	return ErrInvalidDuration
 }

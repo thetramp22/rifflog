@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,12 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 
 	err := h.Service.CreatePracticeSession(c, req)
 
+	if errors.Is(err, services.ErrInvalidDuration) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "could not create practice session",
