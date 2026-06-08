@@ -1,7 +1,7 @@
 CREATE TABLE practice_sessions (
     id SERIAL PRIMARY KEY,
     skill_id INTEGER NOT NULL REFERENCES skills(id),
-    duration_minutes INTEGER NOT NULL,
+    duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0),
     notes TEXT NOT NULL,
     practiced_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
