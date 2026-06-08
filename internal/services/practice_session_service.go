@@ -9,6 +9,8 @@ import (
 )
 
 var ErrInvalidDuration = errors.New("Duration must be greater than zero")
+var ErrInvalidSkillID = errors.New("Invalid skill id")
+var ErrInvalidUserID = errors.New("Invalid user id")
 
 type PracticeSessionService struct {
 	Repo *repository.PracticeSessionRepository
@@ -19,10 +21,11 @@ func NewPracticeSessionService(repo *repository.PracticeSessionRepository) *Prac
 }
 
 func (s *PracticeSessionService) CreatePracticeSession(ctx context.Context, req models.CreatePracticeSessionRequest) error {
-	err := validateDuration(req.DurationMinutes)
+	err := validateRequest(req)
 	if err != nil {
 		return err
 	}
+
 	practiceSession := models.PracticeSession{
 		SkillID:         req.SkillID,
 		DurationMinutes: req.DurationMinutes,
@@ -34,9 +37,15 @@ func (s *PracticeSessionService) CreatePracticeSession(ctx context.Context, req 
 	return s.Repo.CreatePracticeSession(ctx, practiceSession)
 }
 
-func validateDuration(duration int) error {
-	if duration > 0 {
-		return nil
+func validateRequest(req models.CreatePracticeSessionRequest) error {
+	if req.SkillID <= 0 {
+		return ErrInvalidSkillID
 	}
-	return ErrInvalidDuration
+	if req.UserID <= 0 {
+		return ErrInvalidUserID
+	}
+	if req.DurationMinutes <= 0 {
+		return ErrInvalidDuration
+	}
+	return nil
 }

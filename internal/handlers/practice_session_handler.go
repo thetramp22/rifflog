@@ -29,7 +29,9 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 
 	err := h.Service.CreatePracticeSession(c, req)
 
-	if errors.Is(err, services.ErrInvalidDuration) {
+	if errors.Is(err, services.ErrInvalidDuration) ||
+		errors.Is(err, services.ErrInvalidSkillID) ||
+		errors.Is(err, services.ErrInvalidUserID) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
