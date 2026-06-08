@@ -36,6 +36,10 @@ func main() {
 	skillService := services.NewSkillService(skillRepo)
 	skillHandler := handlers.NewSkillHandler(skillService)
 
+	practiceSessionRepo := repository.NewPracticeSessionRepository(conn)
+	practiceSessionService := services.NewPracticeSessionService(practiceSessionRepo)
+	practiceSessionHandler := handlers.NewPracticeSessionHandler(practiceSessionService)
+
 	bootstrap.PopulateSkillsList(skillRepo)
 
 	router.GET("/health", func(c *gin.Context) {
@@ -45,6 +49,7 @@ func main() {
 	})
 	router.POST("/register", userHandler.Register)
 	router.GET("/skills", skillHandler.ListSkills)
+	router.POST("/practice-sessions", practiceSessionHandler.CreatePracticeSession)
 
 	port := os.Getenv("APP_PORT")
 	if port == "" {
