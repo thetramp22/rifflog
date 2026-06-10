@@ -19,12 +19,12 @@ func TestSkillsEndpoint(t *testing.T) {
 
 	t.Log("creating request")
 	req := httptest.NewRequest("GET", "http://localhost:8080/skills", nil)
-	rec := httptest.NewRecorder()
+	w := httptest.NewRecorder()
 
 	t.Log("ServeHTTP call")
-	app.Router.ServeHTTP(rec, req)
+	app.Router.ServeHTTP(w, req)
 
-	if status := rec.Code; status != http.StatusOK {
+	if status := w.Code; status != http.StatusOK {
 		t.Errorf("expected 200, got %v", status)
 	}
 
@@ -44,7 +44,7 @@ func TestSkillsEndpoint(t *testing.T) {
 	}
 
 	var got []models.Skill
-	err := json.Unmarshal(rec.Body.Bytes(), &got)
+	err := json.Unmarshal(w.Body.Bytes(), &got)
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}
