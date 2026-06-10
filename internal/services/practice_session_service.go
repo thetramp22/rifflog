@@ -11,6 +11,7 @@ import (
 var ErrInvalidDuration = errors.New("Duration must be greater than zero")
 var ErrInvalidSkillID = errors.New("Invalid skill id")
 var ErrInvalidUserID = errors.New("Invalid user id")
+var ErrInvalidPracticedAt = errors.New("Invalid practiced at time")
 
 type PracticeSessionService struct {
 	Repo *repository.PracticeSessionRepository
@@ -46,6 +47,9 @@ func validateRequest(req models.CreatePracticeSessionRequest) error {
 	}
 	if req.DurationMinutes <= 0 {
 		return ErrInvalidDuration
+	}
+	if req.PracticedAt.IsZero() {
+		return ErrInvalidPracticedAt
 	}
 	return nil
 }

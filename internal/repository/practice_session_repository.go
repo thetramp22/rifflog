@@ -2,10 +2,14 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/thetramp22/rifflog/internal/models"
 )
+
+var ErrSkillNotFound = errors.New("Skill not found")
 
 type PracticeSessionRepository struct {
 	DB *pgx.Conn
@@ -30,6 +34,13 @@ func (r *PracticeSessionRepository) CreatePracticeSession(ctx context.Context, p
 		practiceSession.PracticedAt,
 		practiceSession.UserID,
 	)
+
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		if pgErr.Code == "23503" {
+			return ErrSkillNotFound
+		}
+	}
 
 	return err
 }
