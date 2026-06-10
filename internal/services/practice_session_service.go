@@ -21,10 +21,10 @@ func NewPracticeSessionService(repo *repository.PracticeSessionRepository) *Prac
 	return &PracticeSessionService{Repo: repo}
 }
 
-func (s *PracticeSessionService) CreatePracticeSession(ctx context.Context, req models.CreatePracticeSessionRequest) error {
+func (s *PracticeSessionService) CreatePracticeSession(ctx context.Context, req models.CreatePracticeSessionRequest) (models.PracticeSession, error) {
 	err := validateRequest(req)
 	if err != nil {
-		return err
+		return models.PracticeSession{}, err
 	}
 
 	practiceSession := models.PracticeSession{

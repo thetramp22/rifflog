@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/thetramp22/rifflog/internal/models"
+	"github.com/thetramp22/rifflog/internal/repository"
 	"github.com/thetramp22/rifflog/internal/services"
 )
 
@@ -27,11 +28,13 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 		return
 	}
 
-	err := h.Service.CreatePracticeSession(c, req)
+	practiceSession, err := h.Service.CreatePracticeSession(c, req)
 
 	if errors.Is(err, services.ErrInvalidDuration) ||
 		errors.Is(err, services.ErrInvalidSkillID) ||
-		errors.Is(err, services.ErrInvalidUserID) {
+		errors.Is(err, services.ErrInvalidUserID) ||
+		errors.Is(err, services.ErrInvalidPracticedAt) ||
+		errors.Is(err, repository.ErrSkillNotFound) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -44,7 +47,5 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "practice session created",
-	})
+	c.JSON(http.StatusCreated, practiceSession)
 }

@@ -19,13 +19,21 @@ func NewPracticeSessionRepository(db *pgx.Conn) *PracticeSessionRepository {
 	return &PracticeSessionRepository{DB: db}
 }
 
-func (r *PracticeSessionRepository) CreatePracticeSession(ctx context.Context, practiceSession models.PracticeSession) error {
+func (r *PracticeSessionRepository) CreatePracticeSession(ctx context.Context, practiceSession models.PracticeSession) (models.PracticeSession, error) {
+	var session models.PracticeSession
+
 	query := `
 		INSERT INTO practice_sessions (skill_id, duration_minutes, notes, practiced_at, user_id)
 		VALUES ($1, $2, $3, $4, $5)
+		RETURNING 
+			skill_id, 
+			duration_minutes, 
+			notes, 
+			practiced_at, 
+			user_id
 	`
 
-	_, err := r.DB.Exec(
+	err := r.DB.QueryRow(
 		ctx,
 		query,
 		practiceSession.SkillID,
@@ -33,14 +41,22 @@ func (r *PracticeSessionRepository) CreatePracticeSession(ctx context.Context, p
 		practiceSession.Notes,
 		practiceSession.PracticedAt,
 		practiceSession.UserID,
+	).Scan(
+		&session.SkillID,
+		&session.DurationMinutes,
+		&session.Notes,
+		&session.PracticedAt,
+		&session.UserID,
 	)
-
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
 		if pgErr.Code == "23503" {
-			return ErrSkillNotFound
+			return models.PracticeSession{}, ErrSkillNotFound
 		}
 	}
+	if err != nil {
+		return models.PracticeSession{}, err
+	}
 
-	return err
+	return session, nil
 }
