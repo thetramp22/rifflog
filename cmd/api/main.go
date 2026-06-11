@@ -50,6 +50,7 @@ func main() {
 	router.POST("/register", userHandler.Register)
 	router.GET("/skills", skillHandler.ListSkills)
 	router.POST("/practice-sessions", practiceSessionHandler.CreatePracticeSession)
+	router.GET("/practice-sessions", practiceSessionHandler.ListPracticeSessions)
 
 	port := os.Getenv("APP_PORT")
 	if port == "" {

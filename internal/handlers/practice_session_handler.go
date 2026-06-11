@@ -49,3 +49,24 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, practiceSession)
 }
+
+func (h *PracticeSessionHandler) ListPracticeSessions(c *gin.Context) {
+	var req models.PracticeSessionDetailsRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid request",
+		})
+		return
+	}
+
+	practiceSessionDetails, err := h.Service.GetPracticeSessions(c, req.UserID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "could not get list of practice sessions",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, practiceSessionDetails)
+}
