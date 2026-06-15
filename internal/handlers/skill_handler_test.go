@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +14,7 @@ import (
 func TestSkillsEndpoint(t *testing.T) {
 	t.Log("creating router")
 	app := SetupTestApp(t)
-	defer app.DB.Close(context.Background())
+	defer app.DB.Close()
 
 	t.Log("creating request")
 	req := httptest.NewRequest("GET", "http://localhost:8080/skills", nil)

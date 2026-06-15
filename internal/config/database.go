@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func DatabaseURL() string {
@@ -18,6 +18,6 @@ func DatabaseURL() string {
 	)
 }
 
-func ParseConfig() (*pgx.ConnConfig, error) {
-	return pgx.ParseConfig(DatabaseURL())
+func ParseConfig() (*pgxpool.Config, error) {
+	return pgxpool.ParseConfig(DatabaseURL())
 }

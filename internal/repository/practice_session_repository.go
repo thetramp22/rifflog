@@ -6,16 +6,17 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/thetramp22/rifflog/internal/models"
 )
 
 var ErrSkillNotFound = errors.New("Skill not found")
 
 type PracticeSessionRepository struct {
-	DB *pgx.Conn
+	DB *pgxpool.Pool
 }
 
-func NewPracticeSessionRepository(db *pgx.Conn) *PracticeSessionRepository {
+func NewPracticeSessionRepository(db *pgxpool.Pool) *PracticeSessionRepository {
 	return &PracticeSessionRepository{DB: db}
 }
 

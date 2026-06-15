@@ -3,15 +3,15 @@ package repository
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/thetramp22/rifflog/internal/models"
 )
 
 type UserRepository struct {
-	DB *pgx.Conn
+	DB *pgxpool.Pool
 }
 
-func NewUserRepository(db *pgx.Conn) *UserRepository {
+func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{DB: db}
 }
 

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -19,7 +18,7 @@ func TestPracticeSessions(t *testing.T) {
 	// Test App Setup
 	t.Log("creating router")
 	app := SetupTestApp(t)
-	defer app.DB.Close(context.Background())
+	defer app.DB.Close()
 
 	// Test User Setup
 	email := fmt.Sprintf("test-%d@test.com", time.Now().UnixNano())

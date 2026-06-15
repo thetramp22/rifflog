@@ -4,14 +4,15 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/thetramp22/rifflog/internal/models"
 )
 
 type SkillRepository struct {
-	DB *pgx.Conn
+	DB *pgxpool.Pool
 }
 
-func NewSkillRepository(db *pgx.Conn) *SkillRepository {
+func NewSkillRepository(db *pgxpool.Pool) *SkillRepository {
 	return &SkillRepository{DB: db}
 }
 

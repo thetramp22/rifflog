@@ -5,24 +5,24 @@ import (
 	"log"
 	"time"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/thetramp22/rifflog/internal/config"
 )
 
-func NewConnection() *pgx.Conn {
+func NewConnection() *pgxpool.Pool {
 	dbConfig, err := config.ParseConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var conn *pgx.Conn
+	var dbPool *pgxpool.Pool
 
 	for i := 0; i < 10; i++ {
-		conn, err = pgx.ConnectConfig(context.Background(), dbConfig)
+		dbPool, err = pgxpool.NewWithConfig(context.Background(), dbConfig)
 
 		if err == nil {
 			log.Println("Connected to PostgreSQL")
-			return conn
+			return dbPool
 		}
 
 		log.Printf("Database not ready... retrying (%d/10)\n", i+1)

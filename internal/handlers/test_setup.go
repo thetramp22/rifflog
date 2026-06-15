@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/thetramp22/rifflog/internal/bootstrap"
 	"github.com/thetramp22/rifflog/internal/database"
@@ -18,7 +18,7 @@ import (
 
 type TestApp struct {
 	Router   *gin.Engine
-	DB       *pgx.Conn
+	DB       *pgxpool.Pool
 	UserRepo *repository.UserRepository
 }
 

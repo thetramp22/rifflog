@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"os"
@@ -21,22 +20,22 @@ func main() {
 		log.Println("No .env file found")
 	}
 
-	conn := database.NewConnection()
-	defer conn.Close(context.Background())
+	dbPool := database.NewConnection()
+	defer dbPool.Close()
 
 	log.Println("Connected to PostgreSQL")
 
 	router := gin.Default()
 
-	userRepo := repository.NewUserRepository(conn)
+	userRepo := repository.NewUserRepository(dbPool)
 	userService := services.NewUserService(userRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
-	skillRepo := repository.NewSkillRepository(conn)
+	skillRepo := repository.NewSkillRepository(dbPool)
 	skillService := services.NewSkillService(skillRepo)
 	skillHandler := handlers.NewSkillHandler(skillService)
 
-	practiceSessionRepo := repository.NewPracticeSessionRepository(conn)
+	practiceSessionRepo := repository.NewPracticeSessionRepository(dbPool)
 	practiceSessionService := services.NewPracticeSessionService(practiceSessionRepo)
 	practiceSessionHandler := handlers.NewPracticeSessionHandler(practiceSessionService)
 
