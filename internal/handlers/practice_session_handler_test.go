@@ -141,9 +141,22 @@ func TestPracticeSessions(t *testing.T) {
 
 	want = []models.PracticeSessionDetails{
 		{SkillID: 1,
-			DurationMinutes: 20,
-			PracticedAt:     practicedAt,
-			Notes:           "short practice session",
-			UserID:          user.ID},
+			SkillName:        "Ear Training",
+			SkillDescription: "Try playing to identify chords and melodies by ear.",
+			DurationMinutes:  20,
+			PracticedAt:      practicedAt,
+			Notes:            "short practice session",
+			UserID:           user.ID},
+	}
+
+	var gotDetails []models.PracticeSessionDetails
+	err = json.Unmarshal(w.Body.Bytes(), &gotDetails)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	opts = cmpopts.IgnoreFields(models.PracticeSessionDetails{}, "ID", "CreatedAt")
+	if diff := cmp.Diff(want, gotDetails, opts); diff != "" {
+		t.Errorf("Values mismatch (-want +got):\n%s", diff)
 	}
 }
