@@ -31,8 +31,8 @@ func TestPracticeSessions(t *testing.T) {
 	}
 	t.Logf("registered user id=%d", user.ID)
 
-	// Test 1 - valid request
-	t.Log("creating request: valid request")
+	// Test 1 - Create Session
+	t.Log("creating request: Create Session - Valid Request")
 	practicedAt := time.Date(
 		2026,
 		time.June,
@@ -44,7 +44,8 @@ func TestPracticeSessions(t *testing.T) {
 		time.UTC,
 	)
 
-	data := models.CreatePracticeSessionRequest{
+	var data any
+	data = models.CreatePracticeSessionRequest{
 		SkillID:         1,
 		DurationMinutes: 20,
 		PracticedAt:     practicedAt,
@@ -66,7 +67,8 @@ func TestPracticeSessions(t *testing.T) {
 		t.Fatalf("expected 201, got %v, body=%s", status, w.Body.String())
 	}
 
-	want := models.PracticeSession{
+	var want any
+	want = models.PracticeSession{
 		SkillID:         1,
 		DurationMinutes: 20,
 		PracticedAt:     practicedAt,
@@ -85,8 +87,8 @@ func TestPracticeSessions(t *testing.T) {
 		t.Errorf("Values mismatch (-want +got):\n%s", diff)
 	}
 
-	// Test 2 - missing duration
-	t.Log("creating request: missing duration")
+	// Test 2 - Create Session - missing duration
+	t.Log("creating request: Create Session - missing duration")
 	practicedAt = time.Date(
 		2026,
 		time.June,
@@ -117,5 +119,32 @@ func TestPracticeSessions(t *testing.T) {
 
 	if status := w.Code; status != http.StatusBadRequest {
 		t.Fatalf("expected 400, got %v, body=%s", status, w.Body.String())
+	}
+
+	// Test 3 - GET practice sessions
+	data = models.PracticeSessionDetailsRequest{
+		UserID: user.ID,
+	}
+	jsonBytes, err = json.Marshal(data)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+	t.Log(string(jsonBytes))
+	req = httptest.NewRequest("GET", "http://localhost:8080/practice-sessions", bytes.NewReader(jsonBytes))
+	w = httptest.NewRecorder()
+
+	t.Log("ServeHTTP call")
+	app.Router.ServeHTTP(w, req)
+
+	if status := w.Code; status != http.StatusOK {
+		t.Fatalf("expected 200, got %v, body=%s", status, w.Body.String())
+	}
+
+	want = []models.PracticeSessionDetails{
+		{SkillID: 1,
+			DurationMinutes: 20,
+			PracticedAt:     practicedAt,
+			Notes:           "short practice session",
+			UserID:          user.ID},
 	}
 }
