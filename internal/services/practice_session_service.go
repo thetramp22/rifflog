@@ -12,6 +12,8 @@ var ErrInvalidDuration = errors.New("Duration must be greater than zero")
 var ErrInvalidSkillID = errors.New("Invalid skill id")
 var ErrInvalidUserID = errors.New("Invalid user id")
 var ErrInvalidPracticedAt = errors.New("Invalid practiced at time")
+var ErrSkillNotFound = errors.New("Skill not found")
+var ErrUserNotFound = errors.New("User not found")
 
 type PracticeSessionService struct {
 	Repo *repository.PracticeSessionRepository
@@ -35,7 +37,17 @@ func (s *PracticeSessionService) CreatePracticeSession(ctx context.Context, req 
 		UserID:          req.UserID,
 	}
 
-	return s.Repo.CreatePracticeSession(ctx, practiceSession)
+	returnedSession, err := s.Repo.CreatePracticeSession(ctx, practiceSession)
+	if err != nil {
+		if errors.Is(err, repository.ErrSkillNotFound) {
+			return models.PracticeSession{}, ErrSkillNotFound
+		}
+		if errors.Is(err, repository.ErrUserNotFound) {
+			return models.PracticeSession{}, ErrUserNotFound
+		}
+		return models.PracticeSession{}, err
+	}
+	return returnedSession, nil
 }
 
 func validateRequest(req models.CreatePracticeSessionRequest) error {

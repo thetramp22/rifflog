@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -11,6 +12,7 @@ import (
 )
 
 var ErrSkillNotFound = errors.New("Skill not found")
+var ErrUserNotFound = errors.New("User not found")
 
 type PracticeSessionRepository struct {
 	DB *pgxpool.Pool
@@ -52,7 +54,12 @@ func (r *PracticeSessionRepository) CreatePracticeSession(ctx context.Context, p
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
 		if pgErr.Code == "23503" {
-			return models.PracticeSession{}, ErrSkillNotFound
+			if strings.Contains(pgErr.Detail, "Key (skill_id)=") {
+				return models.PracticeSession{}, ErrSkillNotFound
+			}
+			if strings.Contains(pgErr.Detail, "Key (user_id)=") {
+				return models.PracticeSession{}, ErrUserNotFound
+			}
 		}
 	}
 	if err != nil {
