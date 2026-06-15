@@ -16,14 +16,14 @@ func NewSkillRepository(db *pgxpool.Pool) *SkillRepository {
 	return &SkillRepository{DB: db}
 }
 
-func (r *SkillRepository) CreateSkill(skill models.Skill) error {
+func (r *SkillRepository) CreateSkill(ctx context.Context, skill models.Skill) error {
 	query := `
 		INSERT INTO skills (name, description)
 		VALUES ($1, $2)
 	`
 
 	_, err := r.DB.Exec(
-		context.Background(),
+		ctx,
 		query,
 		skill.Name,
 		skill.Description,
@@ -32,7 +32,7 @@ func (r *SkillRepository) CreateSkill(skill models.Skill) error {
 	return err
 }
 
-func (r *SkillRepository) SeedSkill(skill models.Skill) error {
+func (r *SkillRepository) SeedSkill(ctx context.Context, skill models.Skill) error {
 	query := `
 		INSERT INTO skills (name, description)
 		VALUES ($1, $2)
@@ -40,7 +40,7 @@ func (r *SkillRepository) SeedSkill(skill models.Skill) error {
 	`
 
 	_, err := r.DB.Exec(
-		context.Background(),
+		ctx,
 		query,
 		skill.Name,
 		skill.Description,
@@ -49,14 +49,14 @@ func (r *SkillRepository) SeedSkill(skill models.Skill) error {
 	return err
 }
 
-func (r *SkillRepository) GetSkills() ([]models.Skill, error) {
+func (r *SkillRepository) GetSkills(ctx context.Context) ([]models.Skill, error) {
 	query := `
 		SELECT id, name, description, created_at
 		FROM skills
 		ORDER BY name
 	`
 
-	rows, err := r.DB.Query(context.Background(), query)
+	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}

@@ -17,7 +17,7 @@ func NewSkillHandler(service *services.SkillService) *SkillHandler {
 }
 
 func (h *SkillHandler) ListSkills(c *gin.Context) {
-	skills, err := h.Service.GetSkills()
+	skills, err := h.Service.GetSkills(c)
 	if err != nil {
 		log.Printf("Error getting skills: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{

@@ -1,11 +1,13 @@
 package bootstrap
 
 import (
+	"context"
+
 	"github.com/thetramp22/rifflog/internal/models"
 	"github.com/thetramp22/rifflog/internal/repository"
 )
 
-func PopulateSkillsList(r *repository.SkillRepository) error {
+func PopulateSkillsList(ctx context.Context, r *repository.SkillRepository) error {
 	skills := []models.Skill{
 		{
 			Name:        "Ear Training",
@@ -22,7 +24,7 @@ func PopulateSkillsList(r *repository.SkillRepository) error {
 	}
 
 	for _, skill := range skills {
-		err := r.SeedSkill(skill)
+		err := r.SeedSkill(ctx, skill)
 		if err != nil {
 			return err
 		}

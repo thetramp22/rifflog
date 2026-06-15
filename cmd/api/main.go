@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -39,7 +40,8 @@ func main() {
 	practiceSessionService := services.NewPracticeSessionService(practiceSessionRepo)
 	practiceSessionHandler := handlers.NewPracticeSessionHandler(practiceSessionService)
 
-	bootstrap.PopulateSkillsList(skillRepo)
+	ctx := context.Background()
+	bootstrap.PopulateSkillsList(ctx, skillRepo)
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

@@ -49,7 +49,8 @@ func SetupTestApp(t *testing.T) *TestApp {
 	practiceSessionHandler := NewPracticeSessionHandler(practiceSessionService)
 
 	t.Log("seeding skills")
-	bootstrap.PopulateSkillsList(skillRepo)
+	ctx := context.Background()
+	bootstrap.PopulateSkillsList(ctx, skillRepo)
 
 	router.POST("/register", userHandler.Register)
 	router.GET("/skills", skillHandler.ListSkills)
