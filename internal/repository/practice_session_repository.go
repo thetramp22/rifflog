@@ -126,3 +126,62 @@ func (r *PracticeSessionRepository) GetPracticeSessions(ctx context.Context, use
 
 	return practiceSessions, nil
 }
+
+func (r *PracticeSessionRepository) GetPracticeSessionStats(ctx context.Context, userID int) (models.PracticeSessionStats, error) {
+	var totalMinutes int
+	totalMinutesQuery := `
+		SELECT COALESCE(SUM(duration_minutes), 0)
+		FROM practice_sessions
+		WHERE user_id = $1
+	`
+	err := r.DB.QueryRow(ctx, totalMinutesQuery, userID).Scan(&totalMinutes)
+	if err != nil {
+		return models.PracticeSessionStats{}, err
+	}
+
+	var totalSessions int
+	totalSessionsQuery := `
+		SELECT COUNT(*)
+		FROM practice_sessions
+		WHERE user_id = $1
+	`
+	err = r.DB.QueryRow(ctx, totalSessionsQuery, userID).Scan(&totalSessions)
+	if err != nil {
+		return models.PracticeSessionStats{}, err
+	}
+
+	var mostPracticedSkill models.MostPracticedSkill
+	mostPracticedSkillQuery := `
+		SELECT skills.name AS skill_name, COALESCE(SUM(practice_sessions.duration_minutes), 0) AS total_minutes
+		FROM practice_sessions
+		INNER JOIN skills ON practice_sessions.skill_id = skills.id		
+		WHERE user_id = $1
+		GROUP BY skills.id, skills.name
+		ORDER BY total_minutes DESC
+		LIMIT 1
+	`
+	err = r.DB.QueryRow(ctx, mostPracticedSkillQuery, userID).Scan(&mostPracticedSkill.Name, &mostPracticedSkill.TotalMinutes)
+	if err != nil {
+		return models.PracticeSessionStats{}, err
+	}
+
+	var longestSession int
+	longestSessionQuery := `
+		SELECT COALESCE(MAX(duration_minutes), 0)
+		FROM practice_sessions
+		WHERE user_id = $1
+	`
+	err = r.DB.QueryRow(ctx, longestSessionQuery, userID).Scan(&longestSession)
+	if err != nil {
+		return models.PracticeSessionStats{}, err
+	}
+
+	stats := models.PracticeSessionStats{
+		TotalMinutes:       totalMinutes,
+		TotalSessions:      totalSessions,
+		MostPracticedSkill: mostPracticedSkill,
+		LongestSession:     longestSession,
+	}
+
+	return stats, nil
+}

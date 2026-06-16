@@ -52,6 +52,7 @@ func main() {
 	router.GET("/skills", skillHandler.ListSkills)
 	router.POST("/practice-sessions", practiceSessionHandler.CreatePracticeSession)
 	router.GET("/practice-sessions", practiceSessionHandler.ListPracticeSessions)
+	router.GET("/practice-sessions/stats", practiceSessionHandler.ListPracticeSessionStats)
 
 	port := os.Getenv("APP_PORT")
 	if port == "" {

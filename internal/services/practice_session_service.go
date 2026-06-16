@@ -74,3 +74,7 @@ func (s *PracticeSessionService) GetPracticeSessions(ctx context.Context, userID
 
 	return practiceSessionDetails, nil
 }
+
+func (s *PracticeSessionService) GetPracticeSessionStats(ctx context.Context, userID int) (models.PracticeSessionStats, error) {
+	return s.Repo.GetPracticeSessionStats(ctx, userID)
+}
