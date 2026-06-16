@@ -2,6 +2,10 @@ package models
 
 import "time"
 
+type PracticeSessionStatsRequest struct {
+	UserID int `json:"user_id"`
+}
+
 type PracticeSessionDetailsRequest struct {
 	UserID int `json:"user_id" form:"user_id"`
 }
