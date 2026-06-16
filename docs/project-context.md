@@ -19,9 +19,10 @@ Current Features:
 - Skills
 - Skill seeding
 - GET /skills
+- Practice Sessions
+- GET /practice-sessions with filter parameters
 
 In Progress:
-- Practice sessions
 - Integration testing
 
 Development Philosophy:
