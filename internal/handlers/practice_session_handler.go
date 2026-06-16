@@ -52,18 +52,36 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 
 func (h *PracticeSessionHandler) ListPracticeSessions(c *gin.Context) {
 	var req models.PracticeSessionDetailsRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
+	var params models.FilterParams
+	if err := c.ShouldBindQuery(&params); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid request",
+			"error": "Invalid query parameters",
 		})
 		return
 	}
+	if params.To != nil {
+		to := params.To.AddDate(0, 0, 1)
+		params.To = &to
+	}
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid query parameters",
+		})
+		return
+	}
+	if req.UserID == 0 {
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid request",
+			})
+			return
+		}
+	}
 
-	practiceSessionDetails, err := h.Service.GetPracticeSessions(c, req.UserID)
+	practiceSessionDetails, err := h.Service.GetPracticeSessions(c, req.UserID, params)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "could not get list of practice sessions",
+			"error": "Could not get list of practice sessions",
 		})
 		return
 	}

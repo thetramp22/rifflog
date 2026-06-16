@@ -66,8 +66,8 @@ func validateRequest(req models.CreatePracticeSessionRequest) error {
 	return nil
 }
 
-func (s *PracticeSessionService) GetPracticeSessions(ctx context.Context, userID int) ([]models.PracticeSessionDetails, error) {
-	practiceSessionDetails, err := s.Repo.GetPracticeSessions(ctx, userID)
+func (s *PracticeSessionService) GetPracticeSessions(ctx context.Context, userID int, params models.FilterParams) ([]models.PracticeSessionDetails, error) {
+	practiceSessionDetails, err := s.Repo.GetPracticeSessions(ctx, userID, params)
 	if err != nil {
 		return nil, err
 	}

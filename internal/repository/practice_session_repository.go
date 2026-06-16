@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
@@ -69,8 +70,8 @@ func (r *PracticeSessionRepository) CreatePracticeSession(ctx context.Context, p
 	return session, nil
 }
 
-func (r *PracticeSessionRepository) GetPracticeSessions(ctx context.Context, userID int) ([]models.PracticeSessionDetails, error) {
-	query := `
+func (r *PracticeSessionRepository) GetPracticeSessions(ctx context.Context, userID int, params models.FilterParams) ([]models.PracticeSessionDetails, error) {
+	baseQuery := `
 		SELECT
 			practice_sessions.id AS session_id,
 			practice_sessions.skill_id AS skill_id,
@@ -84,10 +85,35 @@ func (r *PracticeSessionRepository) GetPracticeSessions(ctx context.Context, use
 		FROM practice_sessions
 		INNER JOIN skills ON practice_sessions.skill_id = skills.id
 		WHERE practice_sessions.user_id = $1
-		ORDER BY practice_sessions.practiced_at DESC;
 	`
+	var conditions []string
+	var args []interface{}
+	argCount := 2
 
-	rows, err := r.DB.Query(ctx, query, userID)
+	if params.Skill != 0 {
+		conditions = append(conditions, fmt.Sprintf("practice_sessions.skill_id = $%d", argCount))
+		args = append(args, params.Skill)
+		argCount++
+	}
+	if params.From != nil {
+		conditions = append(conditions, fmt.Sprintf("practice_sessions.practiced_at >= $%d", argCount))
+		args = append(args, params.From)
+		argCount++
+	}
+	if params.To != nil {
+		conditions = append(conditions, fmt.Sprintf("practice_sessions.practiced_at < $%d", argCount))
+		args = append(args, params.To)
+		argCount++
+	}
+
+	finalQuery := baseQuery
+	if len(conditions) > 0 {
+		finalQuery += " AND " + strings.Join(conditions, " AND ")
+	}
+	finalQuery += " ORDER BY practice_sessions.practiced_at DESC;"
+
+	queryArgs := append([]interface{}{userID}, args...)
+	rows, err := r.DB.Query(ctx, finalQuery, queryArgs...)
 	if err != nil {
 		return nil, err
 	}
