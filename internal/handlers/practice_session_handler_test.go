@@ -242,6 +242,32 @@ func TestListPracticeSessions_FilterByToDate(t *testing.T) {
 	}
 }
 
+func TestListPracticeSessionStats(t *testing.T) {
+	// Test App Setup
+	t.Log("creating router")
+	app, user := SetupTestUser(t)
+	defer app.DB.Close()
+
+	// Test Sessions Setup
+	sessions := SeedPracticeSessionsForTest(t, app, user)
+	totalMinutes := sessions.TotalMinutes
+	totalSessions := sessions.TotalSessions
+	mostPracticedSkill := sessions.MostPracticedSkill
+	longestSession := sessions.LongestSession
+
+	want := models.PracticeSessionStats{
+		TotalMinutes:       totalMinutes,
+		TotalSessions:      totalSessions,
+		MostPracticedSkill: mostPracticedSkill,
+		LongestSession:     longestSession,
+	}
+
+	got := getPracticeSessionStatsForTest(t, app, "http://localhost:8080/practice-sessions/stats", user.ID)
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("Values mismatch (-want +got):\n%s", diff)
+	}
+}
+
 func createPracticeSessionForTest(t *testing.T, app *TestApp, data models.CreatePracticeSessionRequest) {
 	t.Helper()
 
@@ -311,6 +337,10 @@ type SessionFixture struct {
 	PracticedAt                 time.Time
 	ScalesPracticedAt           time.Time
 	LaterEarTrainingPracticedAt time.Time
+	TotalMinutes                int
+	TotalSessions               int
+	MostPracticedSkill          models.MostPracticedSkill
+	LongestSession              int
 }
 
 func SeedPracticeSessionsForTest(
@@ -318,10 +348,15 @@ func SeedPracticeSessionsForTest(
 	app *TestApp,
 	user models.User,
 ) SessionFixture {
+	duration1 := 20
+	duration2 := 35
+	duration3 := 45
+	totalMinutes := duration1 + duration2 + duration3
+
 	practicedAt := time.Date(2026, time.June, 10, 14, 30, 0, 0, time.UTC)
 	createPracticeSessionForTest(t, app, models.CreatePracticeSessionRequest{
 		SkillID:         1,
-		DurationMinutes: 20,
+		DurationMinutes: duration1,
 		PracticedAt:     practicedAt,
 		Notes:           "short practice session",
 		UserID:          user.ID,
@@ -330,7 +365,7 @@ func SeedPracticeSessionsForTest(
 	scalesPracticedAt := time.Date(2026, time.June, 11, 9, 0, 0, 0, time.UTC)
 	createPracticeSessionForTest(t, app, models.CreatePracticeSessionRequest{
 		SkillID:         2,
-		DurationMinutes: 35,
+		DurationMinutes: duration2,
 		PracticedAt:     scalesPracticedAt,
 		Notes:           "scales practice",
 		UserID:          user.ID,
@@ -339,17 +374,54 @@ func SeedPracticeSessionsForTest(
 	laterEarTrainingPracticedAt := time.Date(2026, time.June, 12, 18, 45, 0, 0, time.UTC)
 	createPracticeSessionForTest(t, app, models.CreatePracticeSessionRequest{
 		SkillID:         1,
-		DurationMinutes: 45,
+		DurationMinutes: duration3,
 		PracticedAt:     laterEarTrainingPracticedAt,
 		Notes:           "long ear training session",
 		UserID:          user.ID,
 	})
 
+	mostPracticedSkill := models.MostPracticedSkill{
+		Name:         "Ear Training",
+		TotalMinutes: duration1 + duration3,
+	}
+
 	sessionFixture := SessionFixture{
 		PracticedAt:                 practicedAt,
 		ScalesPracticedAt:           scalesPracticedAt,
 		LaterEarTrainingPracticedAt: laterEarTrainingPracticedAt,
+		TotalMinutes:                totalMinutes,
+		TotalSessions:               3,
+		MostPracticedSkill:          mostPracticedSkill,
+		LongestSession:              duration3,
 	}
 
 	return sessionFixture
+}
+
+func getPracticeSessionStatsForTest(t *testing.T, app *TestApp, target string, userID int) models.PracticeSessionStats {
+	t.Helper()
+
+	data := models.PracticeSessionStatsRequest{
+		UserID: userID,
+	}
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", target, bytes.NewReader(jsonBytes))
+	w := httptest.NewRecorder()
+	app.Router.ServeHTTP(w, req)
+
+	if status := w.Code; status != http.StatusOK {
+		t.Fatalf("expected 200, got %v, body=%s", status, w.Body.String())
+	}
+
+	var got models.PracticeSessionStats
+	err = json.Unmarshal(w.Body.Bytes(), &got)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	return got
 }

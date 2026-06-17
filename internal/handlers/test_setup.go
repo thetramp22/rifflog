@@ -58,6 +58,7 @@ func SetupTestApp(t *testing.T) *TestApp {
 	router.GET("/skills", skillHandler.ListSkills)
 	router.POST("/practice-sessions", practiceSessionHandler.CreatePracticeSession)
 	router.GET("/practice-sessions", practiceSessionHandler.ListPracticeSessions)
+	router.GET("/practice-sessions/stats", practiceSessionHandler.ListPracticeSessionStats)
 
 	return &TestApp{
 		Router:   router,
