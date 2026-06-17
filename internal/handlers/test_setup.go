@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -96,4 +98,21 @@ func CreateTestUser(r *repository.UserRepository, email string, password string)
 	}
 
 	return user, nil
+}
+
+func SetupTestUser(t *testing.T) (*TestApp, models.User) {
+	t.Helper()
+
+	app := SetupTestApp(t)
+
+	email := fmt.Sprintf("test-%d@test.com", time.Now().UnixNano())
+	password := "1234"
+
+	user, err := CreateTestUser(app.UserRepo, email, password)
+	if err != nil {
+		t.Fatalf("Failed to register user: %v", err)
+	}
+	t.Logf("registered user id=%d", user.ID)
+
+	return app, user
 }
