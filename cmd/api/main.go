@@ -49,6 +49,7 @@ func main() {
 		})
 	})
 	router.POST("/register", userHandler.Register)
+	router.POST("/login", userHandler.Login)
 	router.GET("/skills", skillHandler.ListSkills)
 	router.POST("/practice-sessions", practiceSessionHandler.CreatePracticeSession)
 	router.GET("/practice-sessions", practiceSessionHandler.ListPracticeSessions)
