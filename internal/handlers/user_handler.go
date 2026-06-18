@@ -26,7 +26,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	err := h.Service.RegisterUser(req)
+	user, err := h.Service.RegisterUser(c, req)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -35,7 +35,5 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "user created",
-	})
+	c.JSON(http.StatusCreated, user)
 }

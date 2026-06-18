@@ -15,18 +15,35 @@ func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{DB: db}
 }
 
-func (r *UserRepository) CreateUser(user models.User) error {
+func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (models.User, error) {
+	var createdUser models.User
+
 	query := `
 		INSERT INTO users (email, password_hash)
 		VALUES ($1, $2)
+		RETURNING
+			id,
+			email,
+			password_hash,
+			created_at
 	`
 
-	_, err := r.DB.Exec(
-		context.Background(),
+	err := r.DB.QueryRow(
+		ctx,
 		query,
 		user.Email,
 		user.PasswordHash,
+	).Scan(
+		&createdUser.ID,
+		&createdUser.Email,
+		&createdUser.PasswordHash,
+		&createdUser.CreatedAt,
 	)
+	if err != nil {
+		return models.User{}, err
+	}
 
-	return err
+	return createdUser, err
 }
+
+func (r *UserRepository) GetUserByEmail()

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"github.com/thetramp22/rifflog/internal/models"
 	"github.com/thetramp22/rifflog/internal/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -14,14 +16,14 @@ func NewUserService(repo *repository.UserRepository) *UserService {
 	return &UserService{Repo: repo}
 }
 
-func (s *UserService) RegisterUser(req models.RegisterRequest) error {
+func (s *UserService) RegisterUser(ctx context.Context, req models.RegisterRequest) (models.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword(
 		[]byte(req.Password),
 		bcrypt.DefaultCost,
 	)
 
 	if err != nil {
-		return err
+		return models.User{}, err
 	}
 
 	user := models.User{
@@ -29,5 +31,5 @@ func (s *UserService) RegisterUser(req models.RegisterRequest) error {
 		PasswordHash: string(hashedPassword),
 	}
 
-	return s.Repo.CreateUser(user)
+	return s.Repo.CreateUser(ctx, user)
 }
