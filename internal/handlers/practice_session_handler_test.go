@@ -17,7 +17,8 @@ import (
 func TestCreatePracticeSession(t *testing.T) {
 	// Test App Setup
 	t.Log("creating router")
-	app, user := SetupTestUser(t)
+	password := "test"
+	app, user := SetupTestUser(t, password)
 	defer app.DB.Close()
 
 	// Test 1 - Create Session
@@ -69,7 +70,8 @@ func TestCreatePracticeSession(t *testing.T) {
 func TestCreatePracticeSession_InvalidDuration(t *testing.T) {
 	// Test App Setup
 	t.Log("creating router")
-	app, user := SetupTestUser(t)
+	password := "test"
+	app, user := SetupTestUser(t, password)
 	defer app.DB.Close()
 
 	// Test 2 - Create Session - missing duration
@@ -101,7 +103,8 @@ func TestCreatePracticeSession_InvalidDuration(t *testing.T) {
 func TestListPracticeSessions(t *testing.T) {
 	// Test App Setup
 	t.Log("creating router")
-	app, user := SetupTestUser(t)
+	password := "test"
+	app, user := SetupTestUser(t, password)
 	defer app.DB.Close()
 
 	// Test Sessions Setup
@@ -145,7 +148,8 @@ func TestListPracticeSessions(t *testing.T) {
 func TestListPracticeSessions_FilterBySkill(t *testing.T) {
 	// Test App Setup
 	t.Log("creating router")
-	app, user := SetupTestUser(t)
+	password := "test"
+	app, user := SetupTestUser(t, password)
 	defer app.DB.Close()
 
 	// Test Sessions Setup
@@ -173,7 +177,8 @@ func TestListPracticeSessions_FilterBySkill(t *testing.T) {
 func TestListPracticeSessions_FilterByFromDate(t *testing.T) {
 	// Test App Setup
 	t.Log("creating router")
-	app, user := SetupTestUser(t)
+	password := "test"
+	app, user := SetupTestUser(t, password)
 	defer app.DB.Close()
 
 	// Test Sessions Setup
@@ -209,7 +214,8 @@ func TestListPracticeSessions_FilterByFromDate(t *testing.T) {
 func TestListPracticeSessions_FilterByToDate(t *testing.T) {
 	// Test App Setup
 	t.Log("creating router")
-	app, user := SetupTestUser(t)
+	password := "test"
+	app, user := SetupTestUser(t, password)
 	defer app.DB.Close()
 
 	// Test Sessions Setup
@@ -245,7 +251,8 @@ func TestListPracticeSessions_FilterByToDate(t *testing.T) {
 func TestListPracticeSessionStats(t *testing.T) {
 	// Test App Setup
 	t.Log("creating router")
-	app, user := SetupTestUser(t)
+	password := "test"
+	app, user := SetupTestUser(t, password)
 	defer app.DB.Close()
 
 	// Test Sessions Setup

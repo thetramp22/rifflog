@@ -55,6 +55,7 @@ func SetupTestApp(t *testing.T) *TestApp {
 	bootstrap.PopulateSkillsList(ctx, skillRepo)
 
 	router.POST("/register", userHandler.Register)
+	router.POST("/login", userHandler.Login)
 	router.GET("/skills", skillHandler.ListSkills)
 	router.POST("/practice-sessions", practiceSessionHandler.CreatePracticeSession)
 	router.GET("/practice-sessions", practiceSessionHandler.ListPracticeSessions)
@@ -101,13 +102,12 @@ func CreateTestUser(r *repository.UserRepository, email string, password string)
 	return user, nil
 }
 
-func SetupTestUser(t *testing.T) (*TestApp, models.User) {
+func SetupTestUser(t *testing.T, password string) (*TestApp, models.User) {
 	t.Helper()
 
 	app := SetupTestApp(t)
 
 	email := fmt.Sprintf("test-%d@test.com", time.Now().UnixNano())
-	password := "1234"
 
 	user, err := CreateTestUser(app.UserRepo, email, password)
 	if err != nil {
