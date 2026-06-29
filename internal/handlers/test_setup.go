@@ -10,7 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	"github.com/thetramp22/rifflog/internal/auth"
 	"github.com/thetramp22/rifflog/internal/bootstrap"
+	"github.com/thetramp22/rifflog/internal/config"
 	"github.com/thetramp22/rifflog/internal/database"
 	"github.com/thetramp22/rifflog/internal/models"
 	"github.com/thetramp22/rifflog/internal/repository"
@@ -38,8 +40,10 @@ func SetupTestApp(t *testing.T) *TestApp {
 
 	router := gin.Default()
 
+	jwtService := auth.NewJWTService(config.JWTSecret())
+
 	userRepo := repository.NewUserRepository(db)
-	userService := services.NewUserService(userRepo)
+	userService := services.NewUserService(userRepo, jwtService)
 	userHandler := NewUserHandler(userService)
 
 	skillRepo := repository.NewSkillRepository(db)
