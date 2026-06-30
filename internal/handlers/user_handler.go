@@ -48,7 +48,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	_, err := h.Service.Login(c, req)
+	user, err := h.Service.Login(c, req)
 
 	if errors.Is(err, services.ErrInvalidPassword) ||
 		errors.Is(err, services.ErrUserNotFound) {
@@ -64,7 +64,5 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "login successful",
-	})
+	c.JSON(http.StatusOK, user)
 }

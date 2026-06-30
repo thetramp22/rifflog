@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/thetramp22/rifflog/internal/models"
 )
 
@@ -34,6 +35,16 @@ func TestLogin(t *testing.T) {
 
 	if status := w.Code; status != http.StatusOK {
 		t.Fatalf("expected 200, got %v, body=%s", status, w.Body.String())
+	}
+
+	var got models.User
+	err = json.Unmarshal(w.Body.Bytes(), &got)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	if diff := cmp.Diff(data.Email, got.Email); diff != "" {
+		t.Errorf("values mismatch (-want +got):\n%s", diff)
 	}
 }
 
