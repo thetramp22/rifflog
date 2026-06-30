@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/thetramp22/rifflog/internal/auth"
 	"github.com/thetramp22/rifflog/internal/models"
 	"github.com/thetramp22/rifflog/internal/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -13,10 +14,11 @@ var ErrInvalidPassword = errors.New("Invalid password")
 
 type UserService struct {
 	Repo *repository.UserRepository
+	JWT  *auth.JWTService
 }
 
-func NewUserService(repo *repository.UserRepository) *UserService {
-	return &UserService{Repo: repo}
+func NewUserService(repo *repository.UserRepository, jwt *auth.JWTService) *UserService {
+	return &UserService{Repo: repo, JWT: jwt}
 }
 
 func (s *UserService) RegisterUser(ctx context.Context, req models.RegisterRequest) (models.User, error) {
