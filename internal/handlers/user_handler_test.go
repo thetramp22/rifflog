@@ -37,13 +37,22 @@ func TestLogin(t *testing.T) {
 		t.Fatalf("expected 200, got %v, body=%s", status, w.Body.String())
 	}
 
-	var got models.User
+	var got models.LoginResponse
 	err = json.Unmarshal(w.Body.Bytes(), &got)
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}
 
-	if diff := cmp.Diff(data.Email, got.Email); diff != "" {
+	if got.Token == "" {
+		t.Fatal("expected token")
+	}
+
+	claims, err := app.JWTService.ValidateToken(got.Token)
+	if err != nil {
+		t.Fatalf("error validating token: %v", err)
+	}
+
+	if diff := cmp.Diff(user.ID, claims.UserID); diff != "" {
 		t.Errorf("values mismatch (-want +got):\n%s", diff)
 	}
 }

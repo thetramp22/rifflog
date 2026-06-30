@@ -21,9 +21,10 @@ import (
 )
 
 type TestApp struct {
-	Router   *gin.Engine
-	DB       *pgxpool.Pool
-	UserRepo *repository.UserRepository
+	Router     *gin.Engine
+	DB         *pgxpool.Pool
+	UserRepo   *repository.UserRepository
+	JWTService *auth.JWTService
 }
 
 func SetupTestApp(t *testing.T) *TestApp {
@@ -66,9 +67,10 @@ func SetupTestApp(t *testing.T) *TestApp {
 	router.GET("/practice-sessions/stats", practiceSessionHandler.ListPracticeSessionStats)
 
 	return &TestApp{
-		Router:   router,
-		DB:       db,
-		UserRepo: userRepo,
+		Router:     router,
+		DB:         db,
+		UserRepo:   userRepo,
+		JWTService: jwtService,
 	}
 }
 

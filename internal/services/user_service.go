@@ -39,20 +39,34 @@ func (s *UserService) RegisterUser(ctx context.Context, req models.RegisterReque
 	return s.Repo.CreateUser(ctx, user)
 }
 
-func (s *UserService) Login(ctx context.Context, req models.LoginRequest) (models.User, error) {
+func (s *UserService) Login(ctx context.Context, req models.LoginRequest) (models.LoginResponse, error) {
 	user, err := s.Repo.GetUserByEmail(ctx, req.Email)
 	if errors.Is(err, repository.ErrUserNotFound) {
-		return models.User{}, ErrUserNotFound
+		return models.LoginResponse{}, ErrUserNotFound
 	}
 	if err != nil {
-		return models.User{}, err
+		return models.LoginResponse{}, err
 	}
 
 	if !CheckPasswordHash(req.Password, user.PasswordHash) {
-		return models.User{}, ErrInvalidPassword
+		return models.LoginResponse{}, ErrInvalidPassword
 	}
 
-	return user, nil
+	token, err := s.JWT.GenerateToken(user.ID)
+	if err != nil {
+		return models.LoginResponse{}, err
+	}
+
+	loginResponse := models.LoginResponse{
+		Token: token,
+		User: models.UserResponse{
+			ID:        user.ID,
+			Email:     user.Email,
+			CreatedAt: user.CreatedAt,
+		},
+	}
+
+	return loginResponse, nil
 
 }
 
