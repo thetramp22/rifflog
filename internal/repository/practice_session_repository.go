@@ -161,6 +161,14 @@ func (r *PracticeSessionRepository) GetPracticeSessionStats(ctx context.Context,
 		LIMIT 1
 	`
 	err = r.DB.QueryRow(ctx, mostPracticedSkillQuery, userID).Scan(&mostPracticedSkill.Name, &mostPracticedSkill.TotalMinutes)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return models.PracticeSessionStats{
+			TotalMinutes:       0,
+			TotalSessions:      0,
+			MostPracticedSkill: nil,
+			LongestSession:     0,
+		}, nil
+	}
 	if err != nil {
 		return models.PracticeSessionStats{}, err
 	}
@@ -179,7 +187,7 @@ func (r *PracticeSessionRepository) GetPracticeSessionStats(ctx context.Context,
 	stats := models.PracticeSessionStats{
 		TotalMinutes:       totalMinutes,
 		TotalSessions:      totalSessions,
-		MostPracticedSkill: mostPracticedSkill,
+		MostPracticedSkill: &mostPracticedSkill,
 		LongestSession:     longestSession,
 	}
 

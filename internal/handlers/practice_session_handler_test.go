@@ -264,8 +264,28 @@ func TestListPracticeSessionStats(t *testing.T) {
 	want := models.PracticeSessionStats{
 		TotalMinutes:       totalMinutes,
 		TotalSessions:      totalSessions,
-		MostPracticedSkill: mostPracticedSkill,
+		MostPracticedSkill: &mostPracticedSkill,
 		LongestSession:     longestSession,
+	}
+
+	got := getPracticeSessionStatsForTest(t, app, user, "http://localhost:8080/api/practice-sessions/stats")
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("Values mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func TestListPracticeSessionsNoSessions(t *testing.T) {
+	// Test App Setup
+	t.Log("creating router")
+	password := "test"
+	app, user := SetupTestUser(t, password)
+	defer app.DB.Close()
+
+	want := models.PracticeSessionStats{
+		TotalMinutes:       0,
+		TotalSessions:      0,
+		MostPracticedSkill: nil,
+		LongestSession:     0,
 	}
 
 	got := getPracticeSessionStatsForTest(t, app, user, "http://localhost:8080/api/practice-sessions/stats")

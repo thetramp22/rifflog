@@ -38,10 +38,10 @@ type PracticeSessionDetails struct {
 }
 
 type PracticeSessionStats struct {
-	TotalMinutes       int                `json:"total_minutes"`
-	TotalSessions      int                `json:"total_sessions"`
-	MostPracticedSkill MostPracticedSkill `json:"most_practiced_skill"`
-	LongestSession     int                `json:"longest_session"`
+	TotalMinutes       int                 `json:"total_minutes"`
+	TotalSessions      int                 `json:"total_sessions"`
+	MostPracticedSkill *MostPracticedSkill `json:"most_practiced_skill"`
+	LongestSession     int                 `json:"longest_session"`
 }
 
 type MostPracticedSkill struct {
