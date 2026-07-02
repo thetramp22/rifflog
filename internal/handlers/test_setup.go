@@ -14,6 +14,7 @@ import (
 	"github.com/thetramp22/rifflog/internal/bootstrap"
 	"github.com/thetramp22/rifflog/internal/config"
 	"github.com/thetramp22/rifflog/internal/database"
+	"github.com/thetramp22/rifflog/internal/middleware"
 	"github.com/thetramp22/rifflog/internal/models"
 	"github.com/thetramp22/rifflog/internal/repository"
 	"github.com/thetramp22/rifflog/internal/services"
@@ -25,6 +26,11 @@ type TestApp struct {
 	DB         *pgxpool.Pool
 	UserRepo   *repository.UserRepository
 	JWTService *auth.JWTService
+}
+
+type TestUser struct {
+	User  models.User
+	Token string
 }
 
 func SetupTestApp(t *testing.T) *TestApp {
@@ -42,6 +48,8 @@ func SetupTestApp(t *testing.T) *TestApp {
 	router := gin.Default()
 
 	jwtService := auth.NewJWTService(config.JWTSecret())
+
+	authMiddleware := middleware.NewAuthMiddleware(jwtService)
 
 	userRepo := repository.NewUserRepository(db)
 	userService := services.NewUserService(userRepo, jwtService)
@@ -62,9 +70,14 @@ func SetupTestApp(t *testing.T) *TestApp {
 	router.POST("/register", userHandler.Register)
 	router.POST("/login", userHandler.Login)
 	router.GET("/skills", skillHandler.ListSkills)
-	router.POST("/practice-sessions", practiceSessionHandler.CreatePracticeSession)
-	router.GET("/practice-sessions", practiceSessionHandler.ListPracticeSessions)
-	router.GET("/practice-sessions/stats", practiceSessionHandler.ListPracticeSessionStats)
+
+	protected := router.Group("/api")
+	protected.Use(authMiddleware.Authenticate)
+	{
+		protected.POST("/practice-sessions", practiceSessionHandler.CreatePracticeSession)
+		protected.GET("/practice-sessions", practiceSessionHandler.ListPracticeSessions)
+		protected.GET("/practice-sessions/stats", practiceSessionHandler.ListPracticeSessionStats)
+	}
 
 	return &TestApp{
 		Router:     router,
@@ -108,7 +121,7 @@ func CreateTestUser(r *repository.UserRepository, email string, password string)
 	return user, nil
 }
 
-func SetupTestUser(t *testing.T, password string) (*TestApp, models.User) {
+func SetupTestUser(t *testing.T, password string) (*TestApp, TestUser) {
 	t.Helper()
 
 	app := SetupTestApp(t)
@@ -117,9 +130,17 @@ func SetupTestUser(t *testing.T, password string) (*TestApp, models.User) {
 
 	user, err := CreateTestUser(app.UserRepo, email, password)
 	if err != nil {
-		t.Fatalf("Failed to register user: %v", err)
+		t.Fatalf("failed to register user: %v", err)
 	}
 	t.Logf("registered user id=%d", user.ID)
 
-	return app, user
+	token, err := app.JWTService.GenerateToken(user.ID)
+	if err != nil {
+		t.Fatalf("failed to generate token: %v", err)
+	}
+
+	return app, TestUser{
+		User:  user,
+		Token: token,
+	}
 }

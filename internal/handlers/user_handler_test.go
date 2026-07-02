@@ -19,7 +19,7 @@ func TestLogin(t *testing.T) {
 	defer app.DB.Close()
 
 	data := models.LoginRequest{
-		Email:    user.Email,
+		Email:    user.User.Email,
 		Password: password,
 	}
 	jsonBytes, err := json.Marshal(data)
@@ -52,7 +52,7 @@ func TestLogin(t *testing.T) {
 		t.Fatalf("error validating token: %v", err)
 	}
 
-	if diff := cmp.Diff(user.ID, claims.UserID); diff != "" {
+	if diff := cmp.Diff(user.User.ID, claims.UserID); diff != "" {
 		t.Errorf("values mismatch (-want +got):\n%s", diff)
 	}
 }
@@ -66,7 +66,7 @@ func TestLogin_WrongPassword(t *testing.T) {
 	defer app.DB.Close()
 
 	data := models.LoginRequest{
-		Email:    user.Email,
+		Email:    user.User.Email,
 		Password: wrongPassword,
 	}
 	jsonBytes, err := json.Marshal(data)
