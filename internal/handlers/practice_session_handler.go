@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/thetramp22/rifflog/internal/middleware"
 	"github.com/thetramp22/rifflog/internal/models"
 	"github.com/thetramp22/rifflog/internal/repository"
 	"github.com/thetramp22/rifflog/internal/services"
@@ -28,7 +29,15 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 		return
 	}
 
-	practiceSession, err := h.Service.CreatePracticeSession(c, req)
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "invalid user",
+		})
+		return
+	}
+
+	practiceSession, err := h.Service.CreatePracticeSession(c, userID, req)
 
 	if errors.Is(err, services.ErrInvalidDuration) ||
 		errors.Is(err, services.ErrInvalidSkillID) ||
@@ -51,7 +60,14 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 }
 
 func (h *PracticeSessionHandler) ListPracticeSessions(c *gin.Context) {
-	var req models.PracticeSessionDetailsRequest
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "invalid user",
+		})
+		return
+	}
+
 	var params models.FilterParams
 	if err := c.ShouldBindQuery(&params); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -63,22 +79,14 @@ func (h *PracticeSessionHandler) ListPracticeSessions(c *gin.Context) {
 		to := params.To.AddDate(0, 0, 1)
 		params.To = &to
 	}
-	if err := c.ShouldBindQuery(&req); err != nil {
+	if userID == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid query parameters",
+			"error": "Invalid request",
 		})
 		return
 	}
-	if req.UserID == 0 {
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid request",
-			})
-			return
-		}
-	}
 
-	practiceSessionDetails, err := h.Service.GetPracticeSessions(c, req.UserID, params)
+	practiceSessionDetails, err := h.Service.GetPracticeSessions(c, userID, params)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Could not get list of practice sessions",
@@ -90,15 +98,15 @@ func (h *PracticeSessionHandler) ListPracticeSessions(c *gin.Context) {
 }
 
 func (h *PracticeSessionHandler) ListPracticeSessionStats(c *gin.Context) {
-	var req models.PracticeSessionStatsRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request",
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "invalid user",
 		})
 		return
 	}
 
-	practiceSessionStats, err := h.Service.GetPracticeSessionStats(c, req.UserID)
+	practiceSessionStats, err := h.Service.GetPracticeSessionStats(c, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Could not get practice session stats",

@@ -13,6 +13,7 @@ import (
 	"github.com/thetramp22/rifflog/internal/config"
 	"github.com/thetramp22/rifflog/internal/database"
 	"github.com/thetramp22/rifflog/internal/handlers"
+	"github.com/thetramp22/rifflog/internal/middleware"
 	"github.com/thetramp22/rifflog/internal/repository"
 	"github.com/thetramp22/rifflog/internal/services"
 )
@@ -31,6 +32,8 @@ func main() {
 	router := gin.Default()
 
 	jwtService := auth.NewJWTService(config.JWTSecret())
+
+	authMiddleware := middleware.NewAuthMiddleware(jwtService)
 
 	userRepo := repository.NewUserRepository(dbPool)
 	userService := services.NewUserService(userRepo, jwtService)
@@ -55,9 +58,14 @@ func main() {
 	router.POST("/register", userHandler.Register)
 	router.POST("/login", userHandler.Login)
 	router.GET("/skills", skillHandler.ListSkills)
-	router.POST("/practice-sessions", practiceSessionHandler.CreatePracticeSession)
-	router.GET("/practice-sessions", practiceSessionHandler.ListPracticeSessions)
-	router.GET("/practice-sessions/stats", practiceSessionHandler.ListPracticeSessionStats)
+
+	protected := router.Group("/api")
+	protected.Use(authMiddleware.Authenticate)
+	{
+		protected.POST("/practice-sessions", practiceSessionHandler.CreatePracticeSession)
+		protected.GET("/practice-sessions", practiceSessionHandler.ListPracticeSessions)
+		protected.GET("/practice-sessions/stats", practiceSessionHandler.ListPracticeSessionStats)
+	}
 
 	port := os.Getenv("APP_PORT")
 	if port == "" {

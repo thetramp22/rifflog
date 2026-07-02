@@ -7,17 +7,6 @@ type CreatePracticeSessionRequest struct {
 	DurationMinutes int       `json:"duration_minutes"`
 	PracticedAt     time.Time `json:"practiced_at"`
 	Notes           string    `json:"notes"`
-	UserID          int       `json:"user_id"`
-	// TODO: Remove UserID from request body once authentication is implemented.
-	// Session ownership should be derived from the authenticated user context.
-}
-
-type PracticeSessionStatsRequest struct {
-	UserID int `json:"user_id"`
-}
-
-type PracticeSessionDetailsRequest struct {
-	UserID int `json:"user_id" form:"user_id"`
 }
 
 type FilterParams struct {

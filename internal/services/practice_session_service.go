@@ -23,8 +23,8 @@ func NewPracticeSessionService(repo *repository.PracticeSessionRepository) *Prac
 	return &PracticeSessionService{Repo: repo}
 }
 
-func (s *PracticeSessionService) CreatePracticeSession(ctx context.Context, req models.CreatePracticeSessionRequest) (models.PracticeSession, error) {
-	err := validateRequest(req)
+func (s *PracticeSessionService) CreatePracticeSession(ctx context.Context, userID int, req models.CreatePracticeSessionRequest) (models.PracticeSession, error) {
+	err := validateRequest(userID, req)
 	if err != nil {
 		return models.PracticeSession{}, err
 	}
@@ -34,7 +34,7 @@ func (s *PracticeSessionService) CreatePracticeSession(ctx context.Context, req 
 		DurationMinutes: req.DurationMinutes,
 		PracticedAt:     req.PracticedAt,
 		Notes:           req.Notes,
-		UserID:          req.UserID,
+		UserID:          userID,
 	}
 
 	returnedSession, err := s.Repo.CreatePracticeSession(ctx, practiceSession)
@@ -50,11 +50,11 @@ func (s *PracticeSessionService) CreatePracticeSession(ctx context.Context, req 
 	return returnedSession, nil
 }
 
-func validateRequest(req models.CreatePracticeSessionRequest) error {
+func validateRequest(userID int, req models.CreatePracticeSessionRequest) error {
 	if req.SkillID <= 0 {
 		return ErrInvalidSkillID
 	}
-	if req.UserID <= 0 {
+	if userID <= 0 {
 		return ErrInvalidUserID
 	}
 	if req.DurationMinutes <= 0 {
