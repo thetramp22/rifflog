@@ -43,6 +43,7 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 		errors.Is(err, services.ErrInvalidSkillID) ||
 		errors.Is(err, services.ErrInvalidUserID) ||
 		errors.Is(err, services.ErrInvalidPracticedAt) ||
+		errors.Is(err, services.ErrUserNotFound) ||
 		errors.Is(err, repository.ErrSkillNotFound) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
