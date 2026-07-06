@@ -24,7 +24,7 @@ func NewPracticeSessionService(repo *repository.PracticeSessionRepository) *Prac
 }
 
 func (s *PracticeSessionService) CreatePracticeSession(ctx context.Context, userID int, req models.CreatePracticeSessionRequest) (models.PracticeSession, error) {
-	err := validateRequest(userID, req)
+	err := validateCreateSessionRequest(userID, req)
 	if err != nil {
 		return models.PracticeSession{}, err
 	}
@@ -50,7 +50,50 @@ func (s *PracticeSessionService) CreatePracticeSession(ctx context.Context, user
 	return returnedSession, nil
 }
 
-func validateRequest(userID int, req models.CreatePracticeSessionRequest) error {
+func (s *PracticeSessionService) UpdatePracticeSession(ctx context.Context, userID int, sessionID int, req models.UpdatePracticeSessionRequest) (models.PracticeSession, error) {
+	err := validateUpdateSessionRequest(userID, req)
+	if err != nil {
+		return models.PracticeSession{}, err
+	}
+
+	practiceSession := models.PracticeSession{
+		SkillID:         req.SkillID,
+		DurationMinutes: req.DurationMinutes,
+		PracticedAt:     req.PracticedAt,
+		Notes:           req.Notes,
+		UserID:          userID,
+	}
+
+	returnedSession, err := s.Repo.CreatePracticeSession(ctx, practiceSession)
+	if err != nil {
+		if errors.Is(err, repository.ErrSkillNotFound) {
+			return models.PracticeSession{}, ErrSkillNotFound
+		}
+		if errors.Is(err, repository.ErrUserNotFound) {
+			return models.PracticeSession{}, ErrUserNotFound
+		}
+		return models.PracticeSession{}, err
+	}
+	return returnedSession, nil
+}
+
+func validateCreateSessionRequest(userID int, req models.CreatePracticeSessionRequest) error {
+	if req.SkillID <= 0 {
+		return ErrInvalidSkillID
+	}
+	if userID <= 0 {
+		return ErrInvalidUserID
+	}
+	if req.DurationMinutes <= 0 {
+		return ErrInvalidDuration
+	}
+	if req.PracticedAt.IsZero() {
+		return ErrInvalidPracticedAt
+	}
+	return nil
+}
+
+func validateUpdateSessionRequest(userID int, req models.UpdatePracticeSessionRequest) error {
 	if req.SkillID <= 0 {
 		return ErrInvalidSkillID
 	}

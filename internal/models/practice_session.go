@@ -8,6 +8,12 @@ type CreatePracticeSessionRequest struct {
 	PracticedAt     time.Time `json:"practiced_at"`
 	Notes           string    `json:"notes"`
 }
+type UpdatePracticeSessionRequest struct {
+	SkillID         int       `json:"skill_id"`
+	DurationMinutes int       `json:"duration_minutes"`
+	PracticedAt     time.Time `json:"practiced_at"`
+	Notes           string    `json:"notes"`
+}
 
 type FilterParams struct {
 	Skill int        `form:"skill"`

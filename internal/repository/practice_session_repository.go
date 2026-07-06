@@ -70,6 +70,60 @@ func (r *PracticeSessionRepository) CreatePracticeSession(ctx context.Context, p
 	return session, nil
 }
 
+func (r *PracticeSessionRepository) UpdatePracticeSession(ctx context.Context, userID int, practiceSessionID int, practiceSession models.PracticeSession) (models.PracticeSession, error) {
+	var session models.PracticeSession
+
+	query := `
+		UPDATE practice_sessions
+		SET 
+			skill_id = $1,
+			duration_minutes = %2,
+			practiced_at = $3,
+			notes = $4
+		WHERE id = $5
+		AND user_id = $6
+		RETURNING 
+			skill_id, 
+			duration_minutes, 
+			notes, 
+			practiced_at, 
+			user_id
+	`
+
+	err := r.DB.QueryRow(
+		ctx,
+		query,
+		practiceSession.SkillID,
+		practiceSession.DurationMinutes,
+		practiceSession.PracticedAt,
+		practiceSession.Notes,
+		practiceSessionID,
+		userID,
+	).Scan(
+		&session.SkillID,
+		&session.DurationMinutes,
+		&session.Notes,
+		&session.PracticedAt,
+		&session.UserID,
+	)
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		if pgErr.Code == "23503" {
+			if strings.Contains(pgErr.Detail, "Key (skill_id)=") {
+				return models.PracticeSession{}, ErrSkillNotFound
+			}
+			if strings.Contains(pgErr.Detail, "Key (user_id)=") {
+				return models.PracticeSession{}, ErrUserNotFound
+			}
+		}
+	}
+	if err != nil {
+		return models.PracticeSession{}, err
+	}
+
+	return session, nil
+}
+
 func (r *PracticeSessionRepository) GetPracticeSessions(ctx context.Context, userID int, params models.FilterParams) ([]models.PracticeSessionDetails, error) {
 	baseQuery := `
 		SELECT

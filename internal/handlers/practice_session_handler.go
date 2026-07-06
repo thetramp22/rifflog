@@ -60,6 +60,55 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 	c.JSON(http.StatusCreated, practiceSession)
 }
 
+func (h *PracticeSessionHandler) UpdatePracticeSession(c *gin.Context) {
+	var req models.UpdatePracticeSessionRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid request",
+		})
+		return
+	}
+
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "invalid user",
+		})
+		return
+	}
+
+	var sessionID int
+	if err := c.ShouldBindQuery(&sessionID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid query parameters",
+		})
+		return
+	}
+
+	practiceSession, err := h.Service.UpdatePracticeSession(c, userID, sessionID, req)
+
+	if errors.Is(err, services.ErrInvalidDuration) ||
+		errors.Is(err, services.ErrInvalidSkillID) ||
+		errors.Is(err, services.ErrInvalidUserID) ||
+		errors.Is(err, services.ErrInvalidPracticedAt) ||
+		errors.Is(err, services.ErrUserNotFound) ||
+		errors.Is(err, repository.ErrSkillNotFound) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "could not update practice session",
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, practiceSession)
+}
+
 func (h *PracticeSessionHandler) ListPracticeSessions(c *gin.Context) {
 	userID, err := middleware.GetUserID(c)
 	if err != nil {
