@@ -14,6 +14,7 @@ var ErrInvalidUserID = errors.New("Invalid user id")
 var ErrInvalidPracticedAt = errors.New("Invalid practiced at time")
 var ErrSkillNotFound = errors.New("Skill not found")
 var ErrUserNotFound = errors.New("User not found")
+var ErrPracticeSessionNotFound = errors.New("practice session not found")
 
 type PracticeSessionService struct {
 	Repo *repository.PracticeSessionRepository
@@ -71,6 +72,9 @@ func (s *PracticeSessionService) UpdatePracticeSession(ctx context.Context, user
 		}
 		if errors.Is(err, repository.ErrUserNotFound) {
 			return models.PracticeSession{}, ErrUserNotFound
+		}
+		if errors.Is(err, repository.ErrPracticeSessionNotFound) {
+			return models.PracticeSession{}, ErrPracticeSessionNotFound
 		}
 		return models.PracticeSession{}, err
 	}

@@ -12,8 +12,9 @@ import (
 	"github.com/thetramp22/rifflog/internal/models"
 )
 
-var ErrSkillNotFound = errors.New("Skill not found")
-var ErrUserNotFound = errors.New("User not found")
+var ErrSkillNotFound = errors.New("skill not found")
+var ErrUserNotFound = errors.New("user not found")
+var ErrPracticeSessionNotFound = errors.New("practice session not found")
 
 type PracticeSessionRepository struct {
 	DB *pgxpool.Pool
@@ -120,6 +121,9 @@ func (r *PracticeSessionRepository) UpdatePracticeSession(ctx context.Context, u
 				return models.PracticeSession{}, ErrUserNotFound
 			}
 		}
+	}
+	if errors.Is(err, pgx.ErrNoRows) {
+		return models.PracticeSession{}, ErrPracticeSessionNotFound
 	}
 	if err != nil {
 		return models.PracticeSession{}, err
