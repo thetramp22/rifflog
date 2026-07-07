@@ -145,3 +145,25 @@ func SetupTestUser(t *testing.T, password string) (*TestApp, TestUser) {
 		Token: token,
 	}
 }
+
+func SetupExtraTestUser(t *testing.T, app *TestApp, password string) TestUser {
+	t.Helper()
+
+	email := fmt.Sprintf("test-%d@test.com", time.Now().UnixNano())
+
+	user, err := CreateTestUser(app.UserRepo, email, password)
+	if err != nil {
+		t.Fatalf("failed to register user: %v", err)
+	}
+	t.Logf("registered user id=%d", user.ID)
+
+	token, err := app.JWTService.GenerateToken(user.ID)
+	if err != nil {
+		t.Fatalf("failed to generate token: %v", err)
+	}
+
+	return TestUser{
+		User:  user,
+		Token: token,
+	}
+}
