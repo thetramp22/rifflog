@@ -233,6 +233,103 @@ func TestUpdatePracticeSessionWrongUser(t *testing.T) {
 	}
 }
 
+func TestDeletePracticeSession(t *testing.T) {
+	// Test App Setup
+	t.Log("creating router")
+	password := "test"
+	app, user := SetupTestUser(t, password)
+	defer app.DB.Close()
+
+	t.Log("creating request: Create Session to be deleted")
+	practicedAt := time.Date(2026, time.June, 10, 14, 30, 0, 0, time.UTC)
+
+	data := models.CreatePracticeSessionRequest{
+		SkillID:         1,
+		DurationMinutes: 20,
+		PracticedAt:     practicedAt,
+		Notes:           "short practice session",
+	}
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+	t.Log(string(jsonBytes))
+	req := httptest.NewRequest("POST", "http://localhost:8080/api/practice-sessions", bytes.NewReader(jsonBytes))
+	req.Header.Set("Authorization", "Bearer "+user.Token)
+	w := httptest.NewRecorder()
+
+	t.Log("ServeHTTP call")
+	app.Router.ServeHTTP(w, req)
+
+	var originalSession models.PracticeSession
+	err = json.Unmarshal(w.Body.Bytes(), &originalSession)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	t.Log(originalSession)
+
+	t.Log("creating request: Delete Session")
+	deleteReq := httptest.NewRequest("DELETE", fmt.Sprintf("http://localhost:8080/api/practice-sessions/%v", originalSession.ID), nil)
+	deleteReq.Header.Set("Authorization", "Bearer "+user.Token)
+	deleteW := httptest.NewRecorder()
+
+	t.Log("ServeHTTP call")
+	app.Router.ServeHTTP(deleteW, deleteReq)
+
+	if status := deleteW.Code; status != http.StatusOK {
+		t.Fatalf("expected 200, got %v, body=%s", status, deleteW.Body.String())
+	}
+}
+
+func TestDeletePracticeSessionWrongUser(t *testing.T) {
+	// Test App Setup
+	t.Log("creating router")
+	password := "test"
+	app, user := SetupTestUser(t, password)
+	wrongUser := SetupExtraTestUser(t, app, "test2")
+	defer app.DB.Close()
+
+	t.Log("creating request: Create Session to be deleted")
+	practicedAt := time.Date(2026, time.June, 10, 14, 30, 0, 0, time.UTC)
+
+	data := models.CreatePracticeSessionRequest{
+		SkillID:         1,
+		DurationMinutes: 20,
+		PracticedAt:     practicedAt,
+		Notes:           "short practice session",
+	}
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+	t.Log(string(jsonBytes))
+	req := httptest.NewRequest("POST", "http://localhost:8080/api/practice-sessions", bytes.NewReader(jsonBytes))
+	req.Header.Set("Authorization", "Bearer "+user.Token)
+	w := httptest.NewRecorder()
+
+	t.Log("ServeHTTP call")
+	app.Router.ServeHTTP(w, req)
+
+	var originalSession models.PracticeSession
+	err = json.Unmarshal(w.Body.Bytes(), &originalSession)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	t.Log(originalSession)
+
+	t.Log("creating request: Delete Session")
+	deleteReq := httptest.NewRequest("DELETE", fmt.Sprintf("http://localhost:8080/api/practice-sessions/%v", originalSession.ID), nil)
+	deleteReq.Header.Set("Authorization", "Bearer "+wrongUser.Token)
+	deleteW := httptest.NewRecorder()
+
+	t.Log("ServeHTTP call")
+	app.Router.ServeHTTP(deleteW, deleteReq)
+
+	if status := deleteW.Code; status != http.StatusNotFound {
+		t.Fatalf("expected 404, got %v, body=%s", status, deleteW.Body.String())
+	}
+}
+
 func TestListPracticeSessions(t *testing.T) {
 	// Test App Setup
 	t.Log("creating router")

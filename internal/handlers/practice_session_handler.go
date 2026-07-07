@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -112,6 +113,42 @@ func (h *PracticeSessionHandler) UpdatePracticeSession(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, practiceSession)
+}
+
+func (h *PracticeSessionHandler) DeletePracticeSession(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	var sessionID models.PracticeSessionURI
+	if err := c.ShouldBindUri(&sessionID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid or missing id parameter",
+		})
+		return
+	}
+
+	deletedSessionID, err := h.Service.DeletePracticeSession(c, userID, sessionID.ID)
+	if errors.Is(err, services.ErrPracticeSessionNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "could not update practice session",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("practice session %v deleted", deletedSessionID),
+	})
 }
 
 func (h *PracticeSessionHandler) ListPracticeSessions(c *gin.Context) {

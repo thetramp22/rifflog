@@ -66,6 +66,7 @@ func main() {
 		protected.GET("/practice-sessions", practiceSessionHandler.ListPracticeSessions)
 		protected.GET("/practice-sessions/stats", practiceSessionHandler.ListPracticeSessionStats)
 		protected.PUT("/practice-sessions/:id", practiceSessionHandler.UpdatePracticeSession)
+		protected.DELETE("/practice-sessions/:id", practiceSessionHandler.DeletePracticeSession)
 	}
 
 	port := os.Getenv("APP_PORT")

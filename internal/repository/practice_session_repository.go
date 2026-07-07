@@ -132,6 +132,35 @@ func (r *PracticeSessionRepository) UpdatePracticeSession(ctx context.Context, u
 	return session, nil
 }
 
+func (r *PracticeSessionRepository) DeletePracticeSession(ctx context.Context, userID int, practiceSessionID int) (int, error) {
+	var sessionID int
+
+	query := `
+		DELETE
+		FROM practice_sessions
+		WHERE
+			id = $1
+		AND
+			user_id = $2
+		RETURNING id
+	`
+
+	err := r.DB.QueryRow(
+		ctx,
+		query,
+		practiceSessionID,
+		userID,
+	).Scan(
+		&sessionID,
+	)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		return 0, ErrPracticeSessionNotFound
+	}
+
+	return sessionID, nil
+}
+
 func (r *PracticeSessionRepository) GetPracticeSessions(ctx context.Context, userID int, params models.FilterParams) ([]models.PracticeSessionDetails, error) {
 	baseQuery := `
 		SELECT

@@ -81,6 +81,17 @@ func (s *PracticeSessionService) UpdatePracticeSession(ctx context.Context, user
 	return returnedSession, nil
 }
 
+func (s *PracticeSessionService) DeletePracticeSession(ctx context.Context, userID int, sessionID int) (int, error) {
+	deletedSessionID, err := s.Repo.DeletePracticeSession(ctx, userID, sessionID)
+	if err != nil {
+		if errors.Is(err, repository.ErrPracticeSessionNotFound) {
+			return 0, ErrPracticeSessionNotFound
+		}
+		return 0, err
+	}
+	return deletedSessionID, nil
+}
+
 func validateCreateSessionRequest(userID int, req models.CreatePracticeSessionRequest) error {
 	if req.SkillID <= 0 {
 		return ErrInvalidSkillID

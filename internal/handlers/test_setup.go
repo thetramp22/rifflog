@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"os"
+	"io"
 	"testing"
 	"time"
 
@@ -34,21 +34,13 @@ type TestUser struct {
 }
 
 func SetupTestApp(t *testing.T) *TestApp {
-	t.Log("starting setup")
 	err := godotenv.Load("../../.env.test")
 	if err != nil {
 		t.Log("No .env file found")
 	}
-
-	t.Log(os.Getwd())
-
-	t.Log("connecting to database")
 	db := database.NewConnection()
-
 	router := gin.Default()
-
 	jwtService := auth.NewJWTService(config.JWTSecret())
-
 	authMiddleware := middleware.NewAuthMiddleware(jwtService)
 
 	userRepo := repository.NewUserRepository(db)
@@ -63,7 +55,10 @@ func SetupTestApp(t *testing.T) *TestApp {
 	practiceSessionService := services.NewPracticeSessionService(practiceSessionRepo)
 	practiceSessionHandler := NewPracticeSessionHandler(practiceSessionService)
 
-	t.Log("seeding skills")
+	gin.SetMode(gin.TestMode)
+	gin.DefaultWriter = io.Discard
+	gin.DefaultErrorWriter = io.Discard
+
 	ctx := context.Background()
 	bootstrap.PopulateSkillsList(ctx, skillRepo)
 
@@ -78,6 +73,7 @@ func SetupTestApp(t *testing.T) *TestApp {
 		protected.GET("/practice-sessions", practiceSessionHandler.ListPracticeSessions)
 		protected.GET("/practice-sessions/stats", practiceSessionHandler.ListPracticeSessionStats)
 		protected.PUT("/practice-sessions/:id", practiceSessionHandler.UpdatePracticeSession)
+		protected.DELETE("/practice-sessions/:id", practiceSessionHandler.DeletePracticeSession)
 	}
 
 	return &TestApp{
