@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,7 +21,6 @@ func TestCreatePracticeSession(t *testing.T) {
 	app, user := SetupTestUser(t, password)
 	defer app.DB.Close()
 
-	// Test 1 - Create Session
 	t.Log("creating request: Create Session - Valid Request")
 	practicedAt := time.Date(2026, time.June, 10, 14, 30, 0, 0, time.UTC)
 
@@ -73,7 +73,6 @@ func TestCreatePracticeSession_InvalidDuration(t *testing.T) {
 	app, user := SetupTestUser(t, password)
 	defer app.DB.Close()
 
-	// Test 2 - Create Session - missing duration
 	t.Log("creating request: Create Session - missing duration")
 	practicedAt := time.Date(2026, time.June, 10, 14, 30, 0, 0, time.UTC)
 
@@ -99,6 +98,82 @@ func TestCreatePracticeSession_InvalidDuration(t *testing.T) {
 	}
 }
 
+func TestUpdatePracticeSession(t *testing.T) {
+	// Test App Setup
+	t.Log("creating router")
+	password := "test"
+	app, user := SetupTestUser(t, password)
+	defer app.DB.Close()
+
+	t.Log("creating request: Create Session to be updated")
+	practicedAt := time.Date(2026, time.June, 10, 14, 30, 0, 0, time.UTC)
+
+	data := models.CreatePracticeSessionRequest{
+		SkillID:         1,
+		DurationMinutes: 20,
+		PracticedAt:     practicedAt,
+		Notes:           "short practice session",
+	}
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+	t.Log(string(jsonBytes))
+	req := httptest.NewRequest("POST", "http://localhost:8080/api/practice-sessions", bytes.NewReader(jsonBytes))
+	req.Header.Set("Authorization", "Bearer "+user.Token)
+	w := httptest.NewRecorder()
+
+	t.Log("ServeHTTP call")
+	app.Router.ServeHTTP(w, req)
+
+	var originalSession models.PracticeSession
+	err = json.Unmarshal(w.Body.Bytes(), &originalSession)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	updateData := models.UpdatePracticeSessionRequest{
+		SkillID:         2,
+		DurationMinutes: 25,
+		PracticedAt:     practicedAt,
+		Notes:           "short practice session, edited skill id and duration",
+	}
+	jsonBytes, err = json.Marshal(updateData)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+	t.Log(string(jsonBytes))
+	updateReq := httptest.NewRequest("PUT", fmt.Sprintf("http://localhost:8080/api/practice-sessions/%v", originalSession.ID), bytes.NewReader(jsonBytes))
+	updateReq.Header.Set("Authorization", "Bearer "+user.Token)
+	updateW := httptest.NewRecorder()
+
+	t.Log("ServeHTTP call")
+	app.Router.ServeHTTP(updateW, updateReq)
+
+	if status := updateW.Code; status != http.StatusOK {
+		t.Fatalf("expected 200, got %v, body=%s", status, updateW.Body.String())
+	}
+
+	want := models.PracticeSession{
+		SkillID:         2,
+		DurationMinutes: 25,
+		PracticedAt:     practicedAt,
+		Notes:           "short practice session, edited skill id and duration",
+		UserID:          user.User.ID,
+	}
+
+	var got models.PracticeSession
+	err = json.Unmarshal(updateW.Body.Bytes(), &got)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	opts := cmpopts.IgnoreFields(models.PracticeSession{}, "ID", "CreatedAt")
+	if diff := cmp.Diff(want, got, opts); diff != "" {
+		t.Errorf("Values mismatch (-want +got):\n%s", diff)
+	}
+}
+
 func TestListPracticeSessions(t *testing.T) {
 	// Test App Setup
 	t.Log("creating router")
@@ -112,7 +187,6 @@ func TestListPracticeSessions(t *testing.T) {
 	scalesPracticedAt := sessions.ScalesPracticedAt
 	laterEarTrainingPracticedAt := sessions.LaterEarTrainingPracticedAt
 
-	// Test 3 - GET practice sessions
 	want := []models.PracticeSessionDetails{
 		{SkillID: 1,
 			SkillName:        "Ear Training",
@@ -155,7 +229,6 @@ func TestListPracticeSessions_FilterBySkill(t *testing.T) {
 	sessions := SeedPracticeSessionsForTest(t, app, user)
 	scalesPracticedAt := sessions.ScalesPracticedAt
 
-	// Test 4 - GET practice sessions filtered by skill
 	want := []models.PracticeSessionDetails{
 		{SkillID: 2,
 			SkillName:        "Scales",
@@ -185,7 +258,6 @@ func TestListPracticeSessions_FilterByFromDate(t *testing.T) {
 	scalesPracticedAt := sessions.ScalesPracticedAt
 	laterEarTrainingPracticedAt := sessions.LaterEarTrainingPracticedAt
 
-	// Test 5 - GET practice sessions filtered by from date
 	want := []models.PracticeSessionDetails{
 		{SkillID: 1,
 			SkillName:        "Ear Training",
@@ -222,7 +294,6 @@ func TestListPracticeSessions_FilterByToDate(t *testing.T) {
 	practicedAt := sessions.PracticedAt
 	scalesPracticedAt := sessions.ScalesPracticedAt
 
-	// Test 6 - GET practice sessions filtered by inclusive to date
 	want := []models.PracticeSessionDetails{
 		{SkillID: 2,
 			SkillName:        "Scales",

@@ -64,7 +64,7 @@ func (s *PracticeSessionService) UpdatePracticeSession(ctx context.Context, user
 		UserID:          userID,
 	}
 
-	returnedSession, err := s.Repo.CreatePracticeSession(ctx, practiceSession)
+	returnedSession, err := s.Repo.UpdatePracticeSession(ctx, userID, sessionID, practiceSession)
 	if err != nil {
 		if errors.Is(err, repository.ErrSkillNotFound) {
 			return models.PracticeSession{}, ErrSkillNotFound

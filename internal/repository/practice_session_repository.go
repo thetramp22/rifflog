@@ -30,10 +30,12 @@ func (r *PracticeSessionRepository) CreatePracticeSession(ctx context.Context, p
 		INSERT INTO practice_sessions (skill_id, duration_minutes, notes, practiced_at, user_id)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING 
+			id,
 			skill_id, 
 			duration_minutes, 
 			notes, 
 			practiced_at, 
+			created_at,
 			user_id
 	`
 
@@ -46,10 +48,12 @@ func (r *PracticeSessionRepository) CreatePracticeSession(ctx context.Context, p
 		practiceSession.PracticedAt,
 		practiceSession.UserID,
 	).Scan(
+		&session.ID,
 		&session.SkillID,
 		&session.DurationMinutes,
 		&session.Notes,
 		&session.PracticedAt,
+		&session.CreatedAt,
 		&session.UserID,
 	)
 	var pgErr *pgconn.PgError
@@ -77,7 +81,7 @@ func (r *PracticeSessionRepository) UpdatePracticeSession(ctx context.Context, u
 		UPDATE practice_sessions
 		SET 
 			skill_id = $1,
-			duration_minutes = %2,
+			duration_minutes = $2,
 			practiced_at = $3,
 			notes = $4
 		WHERE id = $5

@@ -77,6 +77,7 @@ func SetupTestApp(t *testing.T) *TestApp {
 		protected.POST("/practice-sessions", practiceSessionHandler.CreatePracticeSession)
 		protected.GET("/practice-sessions", practiceSessionHandler.ListPracticeSessions)
 		protected.GET("/practice-sessions/stats", practiceSessionHandler.ListPracticeSessionStats)
+		protected.PUT("/practice-sessions/:id", practiceSessionHandler.UpdatePracticeSession)
 	}
 
 	return &TestApp{

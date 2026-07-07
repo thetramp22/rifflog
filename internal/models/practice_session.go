@@ -21,6 +21,10 @@ type FilterParams struct {
 	To    *time.Time `form:"to" time_format:"2006-01-02"`
 }
 
+type PracticeSessionURI struct {
+	ID int `uri:"id" binding:"required,min=1"`
+}
+
 type PracticeSession struct {
 	ID              int       `db:"id" json:"id"`
 	SkillID         int       `db:"skill_id" json:"skill_id"`

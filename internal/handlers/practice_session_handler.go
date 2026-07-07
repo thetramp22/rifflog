@@ -78,15 +78,15 @@ func (h *PracticeSessionHandler) UpdatePracticeSession(c *gin.Context) {
 		return
 	}
 
-	var sessionID int
-	if err := c.ShouldBindQuery(&sessionID); err != nil {
+	var sessionID models.PracticeSessionURI
+	if err := c.ShouldBindUri(&sessionID); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid query parameters",
+			"error": "Invalid or missing id parameter",
 		})
 		return
 	}
 
-	practiceSession, err := h.Service.UpdatePracticeSession(c, userID, sessionID, req)
+	practiceSession, err := h.Service.UpdatePracticeSession(c, userID, sessionID.ID, req)
 
 	if errors.Is(err, services.ErrInvalidDuration) ||
 		errors.Is(err, services.ErrInvalidSkillID) ||
@@ -106,7 +106,7 @@ func (h *PracticeSessionHandler) UpdatePracticeSession(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, practiceSession)
+	c.JSON(http.StatusOK, practiceSession)
 }
 
 func (h *PracticeSessionHandler) ListPracticeSessions(c *gin.Context) {
