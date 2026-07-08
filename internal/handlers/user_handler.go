@@ -9,14 +9,17 @@ import (
 	"github.com/thetramp22/rifflog/internal/services"
 )
 
+// UserHandler handles requests to endpoints dealing with user registration and login.
 type UserHandler struct {
 	Service *services.UserService
 }
 
+// NewUserHandler returns a UserHandler.
 func NewUserHandler(service *services.UserService) *UserHandler {
 	return &UserHandler{Service: service}
 }
 
+// Register recieves a request to register a new user and calls the RegisterUser service.
 func (h *UserHandler) Register(c *gin.Context) {
 	var req models.RegisterRequest
 
@@ -39,6 +42,8 @@ func (h *UserHandler) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
+// Login recieves a request to log in and authenticate a registered user, and calls
+// the Login service.
 func (h *UserHandler) Login(c *gin.Context) {
 	var req models.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

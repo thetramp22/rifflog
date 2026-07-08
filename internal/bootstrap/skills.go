@@ -1,3 +1,4 @@
+// Package bootstrap provides setup for the application on startup
 package bootstrap
 
 import (
@@ -7,6 +8,10 @@ import (
 	"github.com/thetramp22/rifflog/internal/repository"
 )
 
+// PopulateSkillsList creates the list of skills used by the app.
+// These skills are used to create practice sessions by the user.
+// In future iteration this function may be replaced by a feature to add
+// and/or remove custom skills by the user.
 func PopulateSkillsList(ctx context.Context, r *repository.SkillRepository) error {
 	skills := []models.Skill{
 		{

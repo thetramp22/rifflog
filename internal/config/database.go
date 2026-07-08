@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// DatabaseURL return the URL to the database built from env variables.
 func DatabaseURL() string {
 	return fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s",
@@ -18,6 +19,7 @@ func DatabaseURL() string {
 	)
 }
 
+// ParseConfig returns a configuration for a pgx connection pool.
 func ParseConfig() (*pgxpool.Config, error) {
 	return pgxpool.ParseConfig(DatabaseURL())
 }

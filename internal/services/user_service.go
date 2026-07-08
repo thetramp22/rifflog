@@ -12,6 +12,7 @@ import (
 
 var ErrInvalidPassword = errors.New("Invalid password")
 
+// UserService provides methods dealing with users and authentication.
 type UserService struct {
 	Repo *repository.UserRepository
 	JWT  *auth.JWTService
@@ -21,6 +22,9 @@ func NewUserService(repo *repository.UserRepository, jwt *auth.JWTService) *User
 	return &UserService{Repo: repo, JWT: jwt}
 }
 
+// RegisterUser takes a request from a handler, encrypts the users password,
+// and calls the repository method to create the user.
+// Returns the created user on success.
 func (s *UserService) RegisterUser(ctx context.Context, req models.RegisterRequest) (models.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword(
 		[]byte(req.Password),
@@ -39,6 +43,9 @@ func (s *UserService) RegisterUser(ctx context.Context, req models.RegisterReque
 	return s.Repo.CreateUser(ctx, user)
 }
 
+// Login takes a request from a handler, retrieves the user information from the repository,
+// and authenticates the user.
+// Returns a response containing the user information and authentication token.
 func (s *UserService) Login(ctx context.Context, req models.LoginRequest) (models.LoginResponse, error) {
 	user, err := s.Repo.GetUserByEmail(ctx, req.Email)
 	if errors.Is(err, repository.ErrUserNotFound) {
@@ -48,7 +55,7 @@ func (s *UserService) Login(ctx context.Context, req models.LoginRequest) (model
 		return models.LoginResponse{}, err
 	}
 
-	if !CheckPasswordHash(req.Password, user.PasswordHash) {
+	if !checkPasswordHash(req.Password, user.PasswordHash) {
 		return models.LoginResponse{}, ErrInvalidPassword
 	}
 
@@ -70,7 +77,7 @@ func (s *UserService) Login(ctx context.Context, req models.LoginRequest) (model
 
 }
 
-func CheckPasswordHash(password, hash string) bool {
+func checkPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }

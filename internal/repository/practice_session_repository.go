@@ -16,14 +16,18 @@ var ErrSkillNotFound = errors.New("skill not found")
 var ErrUserNotFound = errors.New("user not found")
 var ErrPracticeSessionNotFound = errors.New("practice session not found")
 
+// PracticeSessionRepository provides methods to access and manipulate the application database.
 type PracticeSessionRepository struct {
 	DB *pgxpool.Pool
 }
 
+// NewPracticeSessionRepository returns a PracticeSessionRepository.
 func NewPracticeSessionRepository(db *pgxpool.Pool) *PracticeSessionRepository {
 	return &PracticeSessionRepository{DB: db}
 }
 
+// CreatePracticeSession stores a practice session in the database.  It returns the created practice
+// session on success.
 func (r *PracticeSessionRepository) CreatePracticeSession(ctx context.Context, practiceSession models.PracticeSession) (models.PracticeSession, error) {
 	var session models.PracticeSession
 
@@ -75,6 +79,8 @@ func (r *PracticeSessionRepository) CreatePracticeSession(ctx context.Context, p
 	return session, nil
 }
 
+// UpdatePracticeSession updates a practice session in the database.  It returns the updated practice
+// session on success.
 func (r *PracticeSessionRepository) UpdatePracticeSession(ctx context.Context, userID int, practiceSessionID int, practiceSession models.PracticeSession) (models.PracticeSession, error) {
 	var session models.PracticeSession
 
@@ -132,6 +138,8 @@ func (r *PracticeSessionRepository) UpdatePracticeSession(ctx context.Context, u
 	return session, nil
 }
 
+// DeletePracticeSession deletes a practice session from the database.  It returns the deleted practice
+// session id on success.
 func (r *PracticeSessionRepository) DeletePracticeSession(ctx context.Context, userID int, practiceSessionID int) (int, error) {
 	var sessionID int
 
@@ -161,6 +169,8 @@ func (r *PracticeSessionRepository) DeletePracticeSession(ctx context.Context, u
 	return sessionID, nil
 }
 
+// GetPracticeSessions retrieves practice sessions from the database based on the given filter parameters.  It returns
+// a list of detailed practice sessions.
 func (r *PracticeSessionRepository) GetPracticeSessions(ctx context.Context, userID int, params models.FilterParams) ([]models.PracticeSessionDetails, error) {
 	baseQuery := `
 		SELECT
@@ -218,6 +228,12 @@ func (r *PracticeSessionRepository) GetPracticeSessions(ctx context.Context, use
 	return practiceSessions, nil
 }
 
+// GetPracticeSessionStats retrieves and calculates session stats for a given user.
+// Returns the following stats:
+//   - total minutes practiced
+//   - total practice sessions
+//   - most practiced skill (skill with most total minutes)
+//   - longest session
 func (r *PracticeSessionRepository) GetPracticeSessionStats(ctx context.Context, userID int) (models.PracticeSessionStats, error) {
 	var totalMinutes int
 	totalMinutesQuery := `

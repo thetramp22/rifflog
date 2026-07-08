@@ -1,3 +1,5 @@
+// Package middleware provides utilites to intercept, modify, and
+// manage HTTP requests and responses.
 package middleware
 
 import (
@@ -11,14 +13,17 @@ import (
 
 const ContextUserID = "userID"
 
+// AuthMiddleware provides methods to identify and authenticate users.
 type AuthMiddleware struct {
 	JWT *auth.JWTService
 }
 
+// NewAuthMiddleware returns an AuthMiddleware.
 func NewAuthMiddleware(jwt *auth.JWTService) *AuthMiddleware {
 	return &AuthMiddleware{JWT: jwt}
 }
 
+// Authenticate validates Bearer tokens contained in the Authorization header.
 func (m *AuthMiddleware) Authenticate(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
@@ -44,6 +49,7 @@ func (m *AuthMiddleware) Authenticate(c *gin.Context) {
 	c.Next()
 }
 
+// GetUserID extracts UserID from context.
 func GetUserID(c *gin.Context) (int, error) {
 	id, ok := c.Get(ContextUserID)
 	if !ok {

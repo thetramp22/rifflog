@@ -1,3 +1,4 @@
+// Package database handles connection to the database.
 package database
 
 import (
@@ -9,6 +10,7 @@ import (
 	"github.com/thetramp22/rifflog/internal/config"
 )
 
+// NewConnection creates and returns a connection pool to the database.
 func NewConnection() *pgxpool.Pool {
 	dbConfig, err := config.ParseConfig()
 	if err != nil {

@@ -8,14 +8,17 @@ import (
 	"github.com/thetramp22/rifflog/internal/models"
 )
 
+// SkillRepository provides methods to access and manipulate the application database.
 type SkillRepository struct {
 	DB *pgxpool.Pool
 }
 
+// NewSkillRepository returns a SkillRepository.
 func NewSkillRepository(db *pgxpool.Pool) *SkillRepository {
 	return &SkillRepository{DB: db}
 }
 
+// CreateSkill stores a skill in the database.
 func (r *SkillRepository) CreateSkill(ctx context.Context, skill models.Skill) error {
 	query := `
 		INSERT INTO skills (name, description)
@@ -32,6 +35,8 @@ func (r *SkillRepository) CreateSkill(ctx context.Context, skill models.Skill) e
 	return err
 }
 
+// SeedSkill stores a skill in the database. Used by the bootstrap package to populate
+// skills on application startup.
 func (r *SkillRepository) SeedSkill(ctx context.Context, skill models.Skill) error {
 	query := `
 		INSERT INTO skills (name, description)
@@ -49,6 +54,7 @@ func (r *SkillRepository) SeedSkill(ctx context.Context, skill models.Skill) err
 	return err
 }
 
+// GetSkills retrieves all skills stored in the database and returns them in a list.
 func (r *SkillRepository) GetSkills(ctx context.Context) ([]models.Skill, error) {
 	query := `
 		SELECT id, name, description, created_at

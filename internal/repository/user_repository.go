@@ -9,14 +9,18 @@ import (
 	"github.com/thetramp22/rifflog/internal/models"
 )
 
+// UserRepository provides methods to access and manipulate the application database.
 type UserRepository struct {
 	DB *pgxpool.Pool
 }
 
+// NewUserRepository returns a UserRepository.
 func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{DB: db}
 }
 
+// CreateUser stores a user in the database.  It returns the created user
+// on success.
 func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (models.User, error) {
 	var createdUser models.User
 
@@ -48,6 +52,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user models.User) (mode
 	return createdUser, err
 }
 
+// GetUserByEmail retrieves a user from the database associated with the given email.
 func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
 	var user models.User
 

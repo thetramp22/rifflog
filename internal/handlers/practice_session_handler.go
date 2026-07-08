@@ -11,14 +11,18 @@ import (
 	"github.com/thetramp22/rifflog/internal/services"
 )
 
+// PracticeSessionHandler handles requests to endpoints dealing with practice sessions.
 type PracticeSessionHandler struct {
 	Service *services.PracticeSessionService
 }
 
+// NewPracticeSessionHandler returns a PracticeSessionHandler.
 func NewPracticeSessionHandler(service *services.PracticeSessionService) *PracticeSessionHandler {
 	return &PracticeSessionHandler{Service: service}
 }
 
+// CreatePracticeSession recieves a request to create a practice session and calls
+// the CreatePracticeSession service.
 func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 	var req models.CreatePracticeSessionRequest
 
@@ -60,6 +64,8 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 	c.JSON(http.StatusCreated, practiceSession)
 }
 
+// UpdatePracticeSession recieves a request to update a practice session and calls
+// the UpdatePracticeSession service.
 func (h *PracticeSessionHandler) UpdatePracticeSession(c *gin.Context) {
 	var req models.UpdatePracticeSessionRequest
 
@@ -115,6 +121,8 @@ func (h *PracticeSessionHandler) UpdatePracticeSession(c *gin.Context) {
 	c.JSON(http.StatusOK, practiceSession)
 }
 
+// DeletePracticeSession recieves a request to delete a practice session and calls
+// the DeletePracticeSession service.
 func (h *PracticeSessionHandler) DeletePracticeSession(c *gin.Context) {
 	userID, err := middleware.GetUserID(c)
 	if err != nil {
@@ -151,6 +159,8 @@ func (h *PracticeSessionHandler) DeletePracticeSession(c *gin.Context) {
 	})
 }
 
+// ListPracticeSessions recieves a request to list practice sessions for the
+// current user and calls the GetPracticeSessions service.
 func (h *PracticeSessionHandler) ListPracticeSessions(c *gin.Context) {
 	userID, err := middleware.GetUserID(c)
 	if err != nil {
@@ -189,6 +199,8 @@ func (h *PracticeSessionHandler) ListPracticeSessions(c *gin.Context) {
 	c.JSON(http.StatusOK, practiceSessionDetails)
 }
 
+// ListPracticeSessionStats recieves a request to list practice session stats for the
+// current user and calls the GetPracticeSessionStats service.
 func (h *PracticeSessionHandler) ListPracticeSessionStats(c *gin.Context) {
 	userID, err := middleware.GetUserID(c)
 	if err != nil {
