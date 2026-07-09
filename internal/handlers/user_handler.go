@@ -55,9 +55,14 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 	user, err := h.Service.Login(c, req)
 
-	if errors.Is(err, services.ErrInvalidPassword) ||
-		errors.Is(err, services.ErrUserNotFound) {
+	if errors.Is(err, services.ErrInvalidPassword) {
 		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	if errors.Is(err, services.ErrUserNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{
 			"error": err.Error(),
 		})
 		return

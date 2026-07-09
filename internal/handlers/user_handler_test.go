@@ -108,7 +108,7 @@ func TestLogin_UnknownEmail(t *testing.T) {
 	t.Log("ServeHTTP call")
 	app.Router.ServeHTTP(w, req)
 
-	if status := w.Code; status != http.StatusUnauthorized {
-		t.Fatalf("expected 200, got %v, body=%s", status, w.Body.String())
+	if status := w.Code; status != http.StatusNotFound {
+		t.Fatalf("expected 400, got %v, body=%s", status, w.Body.String())
 	}
 }
