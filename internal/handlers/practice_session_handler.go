@@ -35,7 +35,7 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 
 	userID, err := middleware.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
+		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "invalid user",
 		})
 		return
@@ -47,9 +47,14 @@ func (h *PracticeSessionHandler) CreatePracticeSession(c *gin.Context) {
 		errors.Is(err, services.ErrInvalidSkillID) ||
 		errors.Is(err, services.ErrInvalidUserID) ||
 		errors.Is(err, services.ErrInvalidPracticedAt) ||
-		errors.Is(err, services.ErrUserNotFound) ||
-		errors.Is(err, services.ErrSkillNotFound) {
+		errors.Is(err, services.ErrUserNotFound) {
 		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	if errors.Is(err, services.ErrSkillNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{
 			"error": err.Error(),
 		})
 		return
