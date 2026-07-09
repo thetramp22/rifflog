@@ -1,196 +1,221 @@
-[![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/golang-migrate/migrate/ci.yaml?branch=master)](https://github.com/golang-migrate/migrate/actions/workflows/ci.yaml?query=branch%3Amaster)
-[![GoDoc](https://pkg.go.dev/badge/github.com/golang-migrate/migrate)](https://pkg.go.dev/github.com/golang-migrate/migrate/v4)
-[![Coverage Status](https://img.shields.io/coveralls/github/golang-migrate/migrate/master.svg)](https://coveralls.io/github/golang-migrate/migrate?branch=master)
-[![packagecloud.io](https://img.shields.io/badge/deb-packagecloud.io-844fec.svg)](https://packagecloud.io/golang-migrate/migrate?filter=debs)
-[![Docker Pulls](https://img.shields.io/docker/pulls/migrate/migrate.svg)](https://hub.docker.com/r/migrate/migrate/)
-![Supported Go Versions](https://img.shields.io/badge/Go-1.23%2C%201.24-lightgrey.svg)
-[![GitHub Release](https://img.shields.io/github/release/golang-migrate/migrate.svg)](https://github.com/golang-migrate/migrate/releases)
-[![Go Report Card](https://goreportcard.com/badge/github.com/golang-migrate/migrate/v4)](https://goreportcard.com/report/github.com/golang-migrate/migrate/v4)
+# RiffLog
 
-# migrate
+RiffLog is a RESTful backend API for tracking guitar practice sessions. It allows users to create an account, authenticate using JSON Web Tokens (JWT), record practice sessions, browse available practice skills, and view statistics about their practice history.
 
-__Database migrations written in Go. Use as [CLI](#cli-usage) or import as [library](#use-in-your-go-project).__
-
-* Migrate reads migrations from [sources](#migration-sources)
-   and applies them in correct order to a [database](#databases).
-* Drivers are "dumb", migrate glues everything together and makes sure the logic is bulletproof.
-   (Keeps the drivers lightweight, too.)
-* Database drivers don't assume things or try to correct user input. When in doubt, fail.
-
-Forked from [mattes/migrate](https://github.com/mattes/migrate)
-
-## Databases
-
-Database drivers run migrations. [Add a new database?](database/driver.go)
-
-* [PostgreSQL](database/postgres)
-* [PGX v4](database/pgx)
-* [PGX v5](database/pgx/v5)
-* [Redshift](database/redshift)
-* [Ql](database/ql)
-* [Cassandra / ScyllaDB](database/cassandra)
-* [SQLite](database/sqlite)
-* [SQLite3](database/sqlite3) ([todo #165](https://github.com/mattes/migrate/issues/165))
-* [SQLCipher](database/sqlcipher)
-* [MySQL / MariaDB](database/mysql)
-* [Neo4j](database/neo4j)
-* [MongoDB](database/mongodb)
-* [CrateDB](database/crate) ([todo #170](https://github.com/mattes/migrate/issues/170))
-* [Shell](database/shell) ([todo #171](https://github.com/mattes/migrate/issues/171))
-* [Google Cloud Spanner](database/spanner)
-* [CockroachDB](database/cockroachdb)
-* [YugabyteDB](database/yugabytedb)
-* [ClickHouse](database/clickhouse)
-* [Firebird](database/firebird)
-* [MS SQL Server](database/sqlserver)
-* [rqlite](database/rqlite)
-
-### Database URLs
-
-Database connection strings are specified via URLs. The URL format is driver dependent but generally has the form: `dbdriver://username:password@host:port/dbname?param1=true&param2=false`
-
-Any [reserved URL characters](https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_reserved_characters) need to be escaped. Note, the `%` character also [needs to be escaped](https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_the_percent_character)
-
-Explicitly, the following characters need to be escaped:
-`!`, `#`, `$`, `%`, `&`, `'`, `(`, `)`, `*`, `+`, `,`, `/`, `:`, `;`, `=`, `?`, `@`, `[`, `]`
-
-It's easiest to always run the URL parts of your DB connection URL (e.g. username, password, etc) through an URL encoder. See the example Python snippets below:
-
-```bash
-$ python3 -c 'import urllib.parse; print(urllib.parse.quote(input("String to encode: "), ""))'
-String to encode: FAKEpassword!#$%&'()*+,/:;=?@[]
-FAKEpassword%21%23%24%25%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D
-$ python2 -c 'import urllib; print urllib.quote(raw_input("String to encode: "), "")'
-String to encode: FAKEpassword!#$%&'()*+,/:;=?@[]
-FAKEpassword%21%23%24%25%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D
-$
-```
-
-## Migration Sources
-
-Source drivers read migrations from local or remote sources. [Add a new source?](source/driver.go)
-
-* [Filesystem](source/file) - read from filesystem
-* [io/fs](source/iofs) - read from a Go [io/fs](https://pkg.go.dev/io/fs#FS)
-* [Go-Bindata](source/go_bindata) - read from embedded binary data ([jteeuwen/go-bindata](https://github.com/jteeuwen/go-bindata))
-* [pkger](source/pkger) - read from embedded binary data ([markbates/pkger](https://github.com/markbates/pkger))
-* [GitHub](source/github) - read from remote GitHub repositories
-* [GitHub Enterprise](source/github_ee) - read from remote GitHub Enterprise repositories
-* [Bitbucket](source/bitbucket) - read from remote Bitbucket repositories
-* [Gitlab](source/gitlab) - read from remote Gitlab repositories
-* [AWS S3](source/aws_s3) - read from Amazon Web Services S3
-* [Google Cloud Storage](source/google_cloud_storage) - read from Google Cloud Platform Storage
-
-## CLI usage
-
-* Simple wrapper around this library.
-* Handles ctrl+c (SIGINT) gracefully.
-* No config search paths, no config files, no magic ENV var injections.
-
-[CLI Documentation](cmd/migrate) (includes CLI install instructions)
-
-### Basic usage
-
-```bash
-$ migrate -source file://path/to/migrations -database postgres://localhost:5432/database up 2
-```
-
-### Docker usage
-
-```bash
-$ docker run -v {{ migration dir }}:/migrations --network host migrate/migrate
-    -path=/migrations/ -database postgres://localhost:5432/database up 2
-```
-
-## Use in your Go project
-
-* API is stable and frozen for this release (v3 & v4).
-* Uses [Go modules](https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more) to manage dependencies.
-* To help prevent database corruptions, it supports graceful stops via `GracefulStop chan bool`.
-* Bring your own logger.
-* Uses `io.Reader` streams internally for low memory overhead.
-* Thread-safe and no goroutine leaks.
-
-__[Go Documentation](https://pkg.go.dev/github.com/golang-migrate/migrate/v4)__
-
-```go
-import (
-    "github.com/golang-migrate/migrate/v4"
-    _ "github.com/golang-migrate/migrate/v4/database/postgres"
-    _ "github.com/golang-migrate/migrate/v4/source/github"
-)
-
-func main() {
-    m, err := migrate.New(
-        "github://mattes:personal-access-token@mattes/migrate_test",
-        "postgres://localhost:5432/database?sslmode=enable")
-    m.Steps(2)
-}
-```
-
-Want to use an existing database client?
-
-```go
-import (
-    "database/sql"
-    _ "github.com/lib/pq"
-    "github.com/golang-migrate/migrate/v4"
-    "github.com/golang-migrate/migrate/v4/database/postgres"
-    _ "github.com/golang-migrate/migrate/v4/source/file"
-)
-
-func main() {
-    db, err := sql.Open("postgres", "postgres://localhost:5432/database?sslmode=enable")
-    driver, err := postgres.WithInstance(db, &postgres.Config{})
-    m, err := migrate.NewWithDatabaseInstance(
-        "file:///migrations",
-        "postgres", driver)
-    m.Up() // or m.Steps(2) if you want to explicitly set the number of migrations to run
-}
-```
-
-## Getting started
-
-Go to [getting started](GETTING_STARTED.md)
-
-## Tutorials
-
-* [CockroachDB](database/cockroachdb/TUTORIAL.md)
-* [PostgreSQL](database/postgres/TUTORIAL.md)
-
-(more tutorials to come)
-
-## Migration files
-
-Each migration has an up and down migration. [Why?](FAQ.md#why-two-separate-files-up-and-down-for-a-migration)
-
-```bash
-1481574547_create_users_table.up.sql
-1481574547_create_users_table.down.sql
-```
-
-[Best practices: How to write migrations.](MIGRATIONS.md)
-
-## Coming from another db migration tool?
-
-Check out [migradaptor](https://github.com/musinit/migradaptor/).
-*Note: migradaptor is not affiliated or supported by this project*
-
-## Versions
-
-Version | Supported? | Import | Notes
---------|------------|--------|------
-**master** | :white_check_mark: | `import "github.com/golang-migrate/migrate/v4"` | New features and bug fixes arrive here first |
-**v4** | :white_check_mark: | `import "github.com/golang-migrate/migrate/v4"` | Used for stable releases |
-**v3** | :x: | `import "github.com/golang-migrate/migrate"` (with package manager) or `import "gopkg.in/golang-migrate/migrate.v3"` (not recommended) | **DO NOT USE** - No longer supported |
-
-## Development and Contributing
-
-Yes, please! [`Makefile`](Makefile) is your friend,
-read the [development guide](CONTRIBUTING.md).
-
-Also have a look at the [FAQ](FAQ.md).
+This project was developed as a portfolio piece to demonstrate modern backend development practices using Go. Rather than focusing on building a production-ready application, the goal was to showcase clean architecture, REST API design, authentication, PostgreSQL integration, Docker-based development, and automated testing.
 
 ---
 
-Looking for alternatives? [https://awesome-go.com/#database](https://awesome-go.com/#database).
+## Features
+
+* User registration and authentication
+* JWT-based authentication and authorization
+* Password hashing with bcrypt
+* Browse available practice skills
+* Create, retrieve, update, and delete practice sessions
+* Filter practice sessions by skill and date range
+* Aggregate practice statistics, including:
+
+  * Total practice time
+  * Total practice sessions
+  * Most practiced skill
+  * Longest practice session
+* PostgreSQL persistence
+* SQL database migrations
+* Docker development environment
+* Unit and integration test coverage
+
+---
+
+## Technology Stack
+
+| Technology              | Purpose                       |
+| ----------------------- | ----------------------------- |
+| Go                      | Backend language              |
+| Gin                     | HTTP routing and middleware   |
+| PostgreSQL              | Relational database           |
+| pgx                     | PostgreSQL driver             |
+| Docker & Docker Compose | Local development environment |
+| JWT                     | Authentication                |
+| bcrypt                  | Password hashing              |
+| golang-migrate          | Database migrations           |
+
+---
+
+## Project Architecture
+
+The application follows a layered architecture to separate HTTP concerns, business logic, and data persistence.
+
+```text
+HTTP Request
+      │
+      ▼
+Gin Router
+      │
+      ▼
+Middleware (Authentication)
+      │
+      ▼
+Handler
+      │
+      ▼
+Service
+      │
+      ▼
+Repository
+      │
+      ▼
+PostgreSQL
+```
+
+Responsibilities are separated into:
+
+* **Handlers** – Parse HTTP requests and build HTTP responses.
+* **Services** – Implement business rules and validation.
+* **Repositories** – Execute SQL queries and map database results.
+* **Middleware** – Authenticate requests and populate the authenticated user context.
+
+---
+
+## Project Structure
+
+```text
+cmd/
+internal/
+    auth/
+    bootstrap/
+    config/
+    database/
+    handlers/
+    middleware/
+    models/
+    repository/
+    services/
+migrations/
+docs/
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+* Go
+* Docker Desktop
+* PostgreSQL (via Docker Compose)
+* golang-migrate CLI
+
+### About development workflow
+
+During development, PostgreSQL runs in Docker while the Go API is run directly from the local development environment. This provides a consistent database environment while allowing fast compilation, debugging, and testing of the Go application.
+
+### Clone the repository
+
+```bash
+git clone https://github.com/thetramp22/rifflog.git
+cd rifflog
+```
+
+### Configure environment variables
+
+```bash
+cp .env.example .env
+```
+
+Update the values in `.env` to match your local environment.
+
+### Start the database
+
+```bash
+docker compose up --build -d
+```
+
+### Run database migrations
+
+```bash
+migrate -path migrations \
+-database "postgres://rifflog:devriffs@localhost:5433/rifflog?sslmode=disable" up
+```
+
+### Start the API
+
+```bash
+go run ./cmd/api
+```
+
+---
+
+## Running Tests
+
+Run all tests:
+
+```bash
+go test ./...
+```
+
+---
+
+## API Documentation
+
+Complete API documentation is available in:
+
+```text
+docs/api.md
+```
+
+The documentation includes:
+
+* Request and response examples
+* Authentication requirements
+* Query parameters
+* Path parameters
+* Error responses
+
+---
+
+## Design Decisions
+
+Several design decisions were intentionally made while developing this project:
+
+* JWT authentication is handled through dedicated middleware rather than requiring client-supplied user IDs.
+* Repository methods are responsible for translating database-specific behavior into application-level errors.
+* Context is propagated through the service and repository layers using Go's standard `context.Context`.
+* Practice session ownership is enforced at the database query level to prevent users from accessing or modifying another user's data.
+* SQL queries are written directly rather than using an ORM to demonstrate familiarity with relational database design and PostgreSQL.
+
+---
+
+## Future Improvements
+
+Possible future enhancements include:
+
+* Refresh token support
+* Password reset workflow
+* OpenAPI (Swagger) documentation
+* CI/CD pipeline
+* Pagination for large result sets
+* Practice goals and streak tracking
+* Frontend client application
+
+---
+
+## What I Learned
+
+Building RiffLog provided practical experience with:
+
+* Designing RESTful APIs in Go
+* Layered application architecture
+* PostgreSQL schema design and SQL
+* JWT authentication and authorization
+* Writing middleware with Gin
+* Integration and unit testing
+* Docker-based local development
+* Database migrations
+* Structuring a maintainable Go project
+
+---
+
+## License
+
+This project is available under the MIT License.
