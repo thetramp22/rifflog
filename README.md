@@ -4,6 +4,10 @@ RiffLog is a RESTful backend API for tracking guitar practice sessions. It allow
 
 This project was developed as a portfolio piece to demonstrate modern backend development practices using Go. Rather than focusing on building a production-ready application, the goal was to showcase clean architecture, REST API design, authentication, PostgreSQL integration, Docker-based development, and automated testing.
 
+## Motivation
+
+I learned to play guitar when I was young but as life got busy with work, family, and responsiblities I found it hard to make time to practice.  Years passed and now I find myself wanting to play but lacking any of the skills and muscle memory I once had.  I needed a way to be consistent about when and what skills I practiced, and I designed RiffLog to be the answer to that problem. 
+
 ---
 
 ## Features
