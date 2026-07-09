@@ -83,7 +83,7 @@ func (h *PracticeSessionHandler) UpdatePracticeSession(c *gin.Context) {
 
 	userID, err := middleware.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
+		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": err.Error(),
 		})
 		return
@@ -131,7 +131,7 @@ func (h *PracticeSessionHandler) UpdatePracticeSession(c *gin.Context) {
 func (h *PracticeSessionHandler) DeletePracticeSession(c *gin.Context) {
 	userID, err := middleware.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
+		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": err.Error(),
 		})
 		return
@@ -169,7 +169,7 @@ func (h *PracticeSessionHandler) DeletePracticeSession(c *gin.Context) {
 func (h *PracticeSessionHandler) ListPracticeSessions(c *gin.Context) {
 	userID, err := middleware.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
+		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "invalid user",
 		})
 		return
@@ -209,7 +209,7 @@ func (h *PracticeSessionHandler) ListPracticeSessions(c *gin.Context) {
 func (h *PracticeSessionHandler) ListPracticeSessionStats(c *gin.Context) {
 	userID, err := middleware.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
+		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "invalid user",
 		})
 		return
