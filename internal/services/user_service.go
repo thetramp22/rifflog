@@ -25,14 +25,14 @@ func NewUserService(repo *repository.UserRepository, jwt *auth.JWTService) *User
 // RegisterUser takes a request from a handler, encrypts the users password,
 // and calls the repository method to create the user.
 // Returns the created user on success.
-func (s *UserService) RegisterUser(ctx context.Context, req models.RegisterRequest) (models.User, error) {
+func (s *UserService) RegisterUser(ctx context.Context, req models.RegisterRequest) (models.UserResponse, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword(
 		[]byte(req.Password),
 		bcrypt.DefaultCost,
 	)
 
 	if err != nil {
-		return models.User{}, err
+		return models.UserResponse{}, err
 	}
 
 	user := models.User{
@@ -40,7 +40,16 @@ func (s *UserService) RegisterUser(ctx context.Context, req models.RegisterReque
 		PasswordHash: string(hashedPassword),
 	}
 
-	return s.Repo.CreateUser(ctx, user)
+	newUser, err := s.Repo.CreateUser(ctx, user)
+	if err != nil {
+		return models.UserResponse{}, err
+	}
+
+	return models.UserResponse{
+		ID:        newUser.ID,
+		Email:     newUser.Email,
+		CreatedAt: newUser.CreatedAt,
+	}, nil
 }
 
 // Login takes a request from a handler, retrieves the user information from the repository,
