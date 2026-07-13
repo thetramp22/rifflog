@@ -223,3 +223,7 @@ Building RiffLog provided practical experience with:
 ## License
 
 This project is available under the MIT License.
+
+Quickstart
+Usage
+Contributing
