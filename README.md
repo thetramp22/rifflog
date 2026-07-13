@@ -224,6 +224,6 @@ Building RiffLog provided practical experience with:
 
 This project is available under the MIT License.
 
-Quickstart
+Quick Start
 Usage
 Contributing
