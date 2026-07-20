@@ -35,3 +35,6 @@ Thumbs.db
 # Hot-reload tools (like 'air')
 tmp/
 bin/
+
+# Review files
+review.diff
