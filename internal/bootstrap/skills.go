@@ -5,7 +5,7 @@ import (
 	"context"
 
 	"github.com/thetramp22/rifflog/internal/models"
-	"github.com/thetramp22/rifflog/internal/repository"
+	repository "github.com/thetramp22/rifflog/internal/repositories"
 )
 
 // PopulateSkillsList creates the list of skills used by the app.

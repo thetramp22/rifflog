@@ -6,7 +6,7 @@ import (
 
 	"github.com/thetramp22/rifflog/internal/auth"
 	"github.com/thetramp22/rifflog/internal/models"
-	"github.com/thetramp22/rifflog/internal/repository"
+	repository "github.com/thetramp22/rifflog/internal/repositories"
 	"golang.org/x/crypto/bcrypt"
 )
 
