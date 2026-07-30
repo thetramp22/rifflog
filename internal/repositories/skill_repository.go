@@ -23,24 +23,6 @@ func (r *SkillRepository) CreateSkill(ctx context.Context, skill models.Skill) e
 	query := `
 		INSERT INTO skills (name, description)
 		VALUES ($1, $2)
-	`
-
-	_, err := r.DB.Exec(
-		ctx,
-		query,
-		skill.Name,
-		skill.Description,
-	)
-
-	return err
-}
-
-// SeedSkill stores a skill in the database. Used by the bootstrap package to populate
-// skills on application startup.
-func (r *SkillRepository) SeedSkill(ctx context.Context, skill models.Skill) error {
-	query := `
-		INSERT INTO skills (name, description)
-		VALUES ($1, $2)
 		ON CONFLICT (name) DO NOTHING
 	`
 

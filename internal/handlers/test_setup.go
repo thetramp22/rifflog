@@ -11,7 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/thetramp22/rifflog/internal/auth"
-	"github.com/thetramp22/rifflog/internal/bootstrap"
 	"github.com/thetramp22/rifflog/internal/config"
 	"github.com/thetramp22/rifflog/internal/database"
 	"github.com/thetramp22/rifflog/internal/middleware"
@@ -58,9 +57,6 @@ func SetupTestApp(t *testing.T) *TestApp {
 	gin.SetMode(gin.TestMode)
 	gin.DefaultWriter = io.Discard
 	gin.DefaultErrorWriter = io.Discard
-
-	ctx := context.Background()
-	bootstrap.PopulateSkillsList(ctx, skillRepo)
 
 	router.POST("/register", userHandler.Register)
 	router.POST("/login", userHandler.Login)

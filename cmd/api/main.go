@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"os"
@@ -9,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/thetramp22/rifflog/internal/auth"
-	"github.com/thetramp22/rifflog/internal/bootstrap"
 	"github.com/thetramp22/rifflog/internal/config"
 	"github.com/thetramp22/rifflog/internal/database"
 	"github.com/thetramp22/rifflog/internal/handlers"
@@ -46,9 +44,6 @@ func main() {
 	practiceSessionRepo := repositories.NewPracticeSessionRepository(dbPool)
 	practiceSessionService := services.NewPracticeSessionService(practiceSessionRepo)
 	practiceSessionHandler := handlers.NewPracticeSessionHandler(practiceSessionService)
-
-	ctx := context.Background()
-	bootstrap.PopulateSkillsList(ctx, skillRepo)
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

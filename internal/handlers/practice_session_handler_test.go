@@ -345,22 +345,22 @@ func TestListPracticeSessions(t *testing.T) {
 
 	want := []models.PracticeSessionDetails{
 		{SkillID: 1,
-			SkillName:        "Ear Training",
-			SkillDescription: "Try playing to identify chords and melodies by ear.",
+			SkillName:        "Alternate Picking",
+			SkillDescription: "Alternate Picking is a picking technique that alternates downstrokes and upstrokes to improve speed, rhythm, and efficiency.",
 			DurationMinutes:  45,
 			PracticedAt:      laterEarTrainingPracticedAt,
-			Notes:            "long ear training session",
+			Notes:            "long picking session",
 			UserID:           user.User.ID},
 		{SkillID: 2,
-			SkillName:        "Scales",
-			SkillDescription: "Memorize note locations and scale patterns.",
+			SkillName:        "Chord Transition",
+			SkillDescription: "Chord Transition is moving your fretting hand smoothly and efficiently from one chord shape to another in time with the music.",
 			DurationMinutes:  35,
 			PracticedAt:      scalesPracticedAt,
-			Notes:            "scales practice",
+			Notes:            "chords practice",
 			UserID:           user.User.ID},
 		{SkillID: 1,
-			SkillName:        "Ear Training",
-			SkillDescription: "Try playing to identify chords and melodies by ear.",
+			SkillName:        "Alternate Picking",
+			SkillDescription: "Alternate Picking is a picking technique that alternates downstrokes and upstrokes to improve speed, rhythm, and efficiency.",
 			DurationMinutes:  20,
 			PracticedAt:      practicedAt,
 			Notes:            "short practice session",
@@ -387,11 +387,11 @@ func TestListPracticeSessions_FilterBySkill(t *testing.T) {
 
 	want := []models.PracticeSessionDetails{
 		{SkillID: 2,
-			SkillName:        "Scales",
-			SkillDescription: "Memorize note locations and scale patterns.",
+			SkillName:        "Chord Transition",
+			SkillDescription: "Chord Transition is moving your fretting hand smoothly and efficiently from one chord shape to another in time with the music.",
 			DurationMinutes:  35,
 			PracticedAt:      scalesPracticedAt,
-			Notes:            "scales practice",
+			Notes:            "chords practice",
 			UserID:           user.User.ID},
 	}
 
@@ -416,18 +416,18 @@ func TestListPracticeSessions_FilterByFromDate(t *testing.T) {
 
 	want := []models.PracticeSessionDetails{
 		{SkillID: 1,
-			SkillName:        "Ear Training",
-			SkillDescription: "Try playing to identify chords and melodies by ear.",
+			SkillName:        "Alternate Picking",
+			SkillDescription: "Alternate Picking is a picking technique that alternates downstrokes and upstrokes to improve speed, rhythm, and efficiency.",
 			DurationMinutes:  45,
 			PracticedAt:      laterEarTrainingPracticedAt,
-			Notes:            "long ear training session",
+			Notes:            "long picking session",
 			UserID:           user.User.ID},
 		{SkillID: 2,
-			SkillName:        "Scales",
-			SkillDescription: "Memorize note locations and scale patterns.",
+			SkillName:        "Chord Transition",
+			SkillDescription: "Chord Transition is moving your fretting hand smoothly and efficiently from one chord shape to another in time with the music.",
 			DurationMinutes:  35,
 			PracticedAt:      scalesPracticedAt,
-			Notes:            "scales practice",
+			Notes:            "chords practice",
 			UserID:           user.User.ID},
 	}
 
@@ -452,15 +452,15 @@ func TestListPracticeSessions_FilterByToDate(t *testing.T) {
 
 	want := []models.PracticeSessionDetails{
 		{SkillID: 2,
-			SkillName:        "Scales",
-			SkillDescription: "Memorize note locations and scale patterns.",
+			SkillName:        "Chord Transition",
+			SkillDescription: "Chord Transition is moving your fretting hand smoothly and efficiently from one chord shape to another in time with the music.",
 			DurationMinutes:  35,
 			PracticedAt:      scalesPracticedAt,
-			Notes:            "scales practice",
+			Notes:            "chords practice",
 			UserID:           user.User.ID},
 		{SkillID: 1,
-			SkillName:        "Ear Training",
-			SkillDescription: "Try playing to identify chords and melodies by ear.",
+			SkillName:        "Alternate Picking",
+			SkillDescription: "Alternate Picking is a picking technique that alternates downstrokes and upstrokes to improve speed, rhythm, and efficiency.",
 			DurationMinutes:  20,
 			PracticedAt:      practicedAt,
 			Notes:            "short practice session",
@@ -593,7 +593,7 @@ func SeedPracticeSessionsForTest(
 		SkillID:         2,
 		DurationMinutes: duration2,
 		PracticedAt:     scalesPracticedAt,
-		Notes:           "scales practice",
+		Notes:           "chords practice",
 	})
 
 	laterEarTrainingPracticedAt := time.Date(2026, time.June, 12, 18, 45, 0, 0, time.UTC)
@@ -601,11 +601,11 @@ func SeedPracticeSessionsForTest(
 		SkillID:         1,
 		DurationMinutes: duration3,
 		PracticedAt:     laterEarTrainingPracticedAt,
-		Notes:           "long ear training session",
+		Notes:           "long picking session",
 	})
 
 	mostPracticedSkill := models.MostPracticedSkill{
-		Name:         "Ear Training",
+		Name:         "Alternate Picking",
 		TotalMinutes: duration1 + duration3,
 	}
 
