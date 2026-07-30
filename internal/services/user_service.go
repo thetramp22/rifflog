@@ -6,7 +6,7 @@ import (
 
 	"github.com/thetramp22/rifflog/internal/auth"
 	"github.com/thetramp22/rifflog/internal/models"
-	repository "github.com/thetramp22/rifflog/internal/repositories"
+	"github.com/thetramp22/rifflog/internal/repositories"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -14,11 +14,11 @@ var ErrInvalidPassword = errors.New("Invalid password")
 
 // UserService provides methods dealing with users and authentication.
 type UserService struct {
-	Repo *repository.UserRepository
+	Repo *repositories.UserRepository
 	JWT  *auth.JWTService
 }
 
-func NewUserService(repo *repository.UserRepository, jwt *auth.JWTService) *UserService {
+func NewUserService(repo *repositories.UserRepository, jwt *auth.JWTService) *UserService {
 	return &UserService{Repo: repo, JWT: jwt}
 }
 
@@ -57,7 +57,7 @@ func (s *UserService) RegisterUser(ctx context.Context, req models.RegisterReque
 // Returns a response containing the user information and authentication token.
 func (s *UserService) Login(ctx context.Context, req models.LoginRequest) (models.LoginResponse, error) {
 	user, err := s.Repo.GetUserByEmail(ctx, req.Email)
-	if errors.Is(err, repository.ErrUserNotFound) {
+	if errors.Is(err, repositories.ErrUserNotFound) {
 		return models.LoginResponse{}, ErrUserNotFound
 	}
 	if err != nil {

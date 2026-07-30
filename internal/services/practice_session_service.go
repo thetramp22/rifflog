@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/thetramp22/rifflog/internal/models"
-	repository "github.com/thetramp22/rifflog/internal/repositories"
+	"github.com/thetramp22/rifflog/internal/repositories"
 )
 
 var ErrInvalidDuration = errors.New("Duration must be greater than zero")
@@ -18,11 +18,11 @@ var ErrPracticeSessionNotFound = errors.New("practice session not found")
 
 // PracticeSessionService provides methods dealing with practice sessions.
 type PracticeSessionService struct {
-	Repo *repository.PracticeSessionRepository
+	Repo *repositories.PracticeSessionRepository
 }
 
 // NewPracticeSessionService returns a PracticeSessionService.
-func NewPracticeSessionService(repo *repository.PracticeSessionRepository) *PracticeSessionService {
+func NewPracticeSessionService(repo *repositories.PracticeSessionRepository) *PracticeSessionService {
 	return &PracticeSessionService{Repo: repo}
 }
 
@@ -44,10 +44,10 @@ func (s *PracticeSessionService) CreatePracticeSession(ctx context.Context, user
 
 	returnedSession, err := s.Repo.CreatePracticeSession(ctx, practiceSession)
 	if err != nil {
-		if errors.Is(err, repository.ErrSkillNotFound) {
+		if errors.Is(err, repositories.ErrSkillNotFound) {
 			return models.PracticeSession{}, ErrSkillNotFound
 		}
-		if errors.Is(err, repository.ErrUserNotFound) {
+		if errors.Is(err, repositories.ErrUserNotFound) {
 			return models.PracticeSession{}, ErrUserNotFound
 		}
 		return models.PracticeSession{}, err
@@ -73,13 +73,13 @@ func (s *PracticeSessionService) UpdatePracticeSession(ctx context.Context, user
 
 	returnedSession, err := s.Repo.UpdatePracticeSession(ctx, userID, sessionID, practiceSession)
 	if err != nil {
-		if errors.Is(err, repository.ErrSkillNotFound) {
+		if errors.Is(err, repositories.ErrSkillNotFound) {
 			return models.PracticeSession{}, ErrSkillNotFound
 		}
-		if errors.Is(err, repository.ErrUserNotFound) {
+		if errors.Is(err, repositories.ErrUserNotFound) {
 			return models.PracticeSession{}, ErrUserNotFound
 		}
-		if errors.Is(err, repository.ErrPracticeSessionNotFound) {
+		if errors.Is(err, repositories.ErrPracticeSessionNotFound) {
 			return models.PracticeSession{}, ErrPracticeSessionNotFound
 		}
 		return models.PracticeSession{}, err
@@ -92,7 +92,7 @@ func (s *PracticeSessionService) UpdatePracticeSession(ctx context.Context, user
 func (s *PracticeSessionService) DeletePracticeSession(ctx context.Context, userID int, sessionID int) (int, error) {
 	deletedSessionID, err := s.Repo.DeletePracticeSession(ctx, userID, sessionID)
 	if err != nil {
-		if errors.Is(err, repository.ErrPracticeSessionNotFound) {
+		if errors.Is(err, repositories.ErrPracticeSessionNotFound) {
 			return 0, ErrPracticeSessionNotFound
 		}
 		return 0, err

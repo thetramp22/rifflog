@@ -16,7 +16,7 @@ import (
 	"github.com/thetramp22/rifflog/internal/database"
 	"github.com/thetramp22/rifflog/internal/middleware"
 	"github.com/thetramp22/rifflog/internal/models"
-	repository "github.com/thetramp22/rifflog/internal/repositories"
+	"github.com/thetramp22/rifflog/internal/repositories"
 	"github.com/thetramp22/rifflog/internal/services"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -24,7 +24,7 @@ import (
 type TestApp struct {
 	Router     *gin.Engine
 	DB         *pgxpool.Pool
-	UserRepo   *repository.UserRepository
+	UserRepo   *repositories.UserRepository
 	JWTService *auth.JWTService
 }
 
@@ -43,15 +43,15 @@ func SetupTestApp(t *testing.T) *TestApp {
 	jwtService := auth.NewJWTService(config.JWTSecret())
 	authMiddleware := middleware.NewAuthMiddleware(jwtService)
 
-	userRepo := repository.NewUserRepository(db)
+	userRepo := repositories.NewUserRepository(db)
 	userService := services.NewUserService(userRepo, jwtService)
 	userHandler := NewUserHandler(userService)
 
-	skillRepo := repository.NewSkillRepository(db)
+	skillRepo := repositories.NewSkillRepository(db)
 	skillService := services.NewSkillService(skillRepo)
 	skillHandler := NewSkillHandler(skillService)
 
-	practiceSessionRepo := repository.NewPracticeSessionRepository(db)
+	practiceSessionRepo := repositories.NewPracticeSessionRepository(db)
 	practiceSessionService := services.NewPracticeSessionService(practiceSessionRepo)
 	practiceSessionHandler := NewPracticeSessionHandler(practiceSessionService)
 
@@ -84,7 +84,7 @@ func SetupTestApp(t *testing.T) *TestApp {
 	}
 }
 
-func CreateTestUser(r *repository.UserRepository, email string, password string) (models.User, error) {
+func CreateTestUser(r *repositories.UserRepository, email string, password string) (models.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword(
 		[]byte(password),
 		bcrypt.DefaultCost,

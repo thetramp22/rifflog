@@ -5,14 +5,14 @@ import (
 	"context"
 
 	"github.com/thetramp22/rifflog/internal/models"
-	repository "github.com/thetramp22/rifflog/internal/repositories"
+	"github.com/thetramp22/rifflog/internal/repositories"
 )
 
 // PopulateSkillsList creates the list of skills used by the app.
 // These skills are used to create practice sessions by the user.
 // In future iteration this function may be replaced by a feature to add
 // and/or remove custom skills by the user.
-func PopulateSkillsList(ctx context.Context, r *repository.SkillRepository) error {
+func PopulateSkillsList(ctx context.Context, r *repositories.SkillRepository) error {
 	skills := []models.Skill{
 		{
 			Name:        "Ear Training",

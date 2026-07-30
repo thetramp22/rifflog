@@ -4,16 +4,16 @@ import (
 	"context"
 
 	"github.com/thetramp22/rifflog/internal/models"
-	repository "github.com/thetramp22/rifflog/internal/repositories"
+	"github.com/thetramp22/rifflog/internal/repositories"
 )
 
 // SkillService provides methods dealing with skill.
 type SkillService struct {
-	Repo *repository.SkillRepository
+	Repo *repositories.SkillRepository
 }
 
 // NewSkillService returns a SkillService.
-func NewSkillService(repo *repository.SkillRepository) *SkillService {
+func NewSkillService(repo *repositories.SkillRepository) *SkillService {
 	return &SkillService{Repo: repo}
 }
 

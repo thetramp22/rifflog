@@ -14,7 +14,7 @@ import (
 	"github.com/thetramp22/rifflog/internal/database"
 	"github.com/thetramp22/rifflog/internal/handlers"
 	"github.com/thetramp22/rifflog/internal/middleware"
-	repository "github.com/thetramp22/rifflog/internal/repositories"
+	"github.com/thetramp22/rifflog/internal/repositories"
 	"github.com/thetramp22/rifflog/internal/services"
 )
 
@@ -35,15 +35,15 @@ func main() {
 
 	authMiddleware := middleware.NewAuthMiddleware(jwtService)
 
-	userRepo := repository.NewUserRepository(dbPool)
+	userRepo := repositories.NewUserRepository(dbPool)
 	userService := services.NewUserService(userRepo, jwtService)
 	userHandler := handlers.NewUserHandler(userService)
 
-	skillRepo := repository.NewSkillRepository(dbPool)
+	skillRepo := repositories.NewSkillRepository(dbPool)
 	skillService := services.NewSkillService(skillRepo)
 	skillHandler := handlers.NewSkillHandler(skillService)
 
-	practiceSessionRepo := repository.NewPracticeSessionRepository(dbPool)
+	practiceSessionRepo := repositories.NewPracticeSessionRepository(dbPool)
 	practiceSessionService := services.NewPracticeSessionService(practiceSessionRepo)
 	practiceSessionHandler := handlers.NewPracticeSessionHandler(practiceSessionService)
 
