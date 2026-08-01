@@ -125,6 +125,7 @@ cd rifflog
 
 ```bash
 cp .env.example .env
+cp .env.test.example .env.test
 ```
 
 Update the values in `.env` to match your local environment.
@@ -137,9 +138,13 @@ docker compose up --build -d
 
 ### Run database migrations
 
+Run the migrations using the same database credentials configured in your `.env` file.
+
 ```bash
-migrate -path migrations \
--database "postgres://rifflog:devriffs@localhost:5433/rifflog?sslmode=disable" up
+migrate \
+  -path migrations \
+  -database "postgres://<DB_USER>:<DB_PASSWORD>@localhost:<DB_PORT>/<DB_NAME>?sslmode=disable" \
+  up
 ```
 
 ### Start the API
