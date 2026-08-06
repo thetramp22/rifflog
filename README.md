@@ -1,48 +1,50 @@
 # RiffLog
 
-RiffLog is a RESTful backend API for tracking guitar practice sessions. It allows users to create an account, authenticate using JSON Web Tokens (JWT), record practice sessions, browse available practice skills, and view statistics about their practice history.
+RiffLog is a backend web service that helps guitar players record and analyze their practice sessions. Users can register accounts, securely authenticate with JWTs, log practice sessions, browse practice skills, and review practice statistics over time.
 
-This project was developed as a portfolio piece to demonstrate modern backend development practices using Go. Rather than focusing on building a production-ready application, the goal was to showcase clean architecture, REST API design, authentication, PostgreSQL integration, Docker-based development, and automated testing.
+I built RiffLog as the capstone project in my journey back into professional software development. The goal wasn't simply to create another CRUD API—it was to design, build, test, and deploy a complete backend service using modern Go development practices.
 
-## Motivation
+I intentionally built RiffLog without using an ORM or code-generation tools because I wanted to deepen my understanding of SQL, PostgreSQL, HTTP APIs, authentication, and backend architecture. Every layer of the application—from middleware to database queries—was implemented manually to strengthen my understanding of how modern backend services are constructed.
 
-I learned to play guitar when I was young but as life got busy with work, family, and responsiblities I found it hard to make time to practice.  Years passed and now I find myself wanting to play but lacking any of the skills and muscle memory I once had.  I needed a way to be consistent about when and what skills I practiced, and I designed RiffLog to be the answer to that problem. 
+## Live Deployment
 
----
-
-## Features
-
-* User registration and authentication
-* JWT-based authentication and authorization
-* Password hashing with bcrypt
-* Browse available practice skills
-* Create, retrieve, update, and delete practice sessions
-* Filter practice sessions by skill and date range
-* Aggregate practice statistics, including:
-
-  * Total practice time
-  * Total practice sessions
-  * Most practiced skill
-  * Longest practice session
-* PostgreSQL persistence
-* SQL database migrations
-* Docker development environment
-* Unit and integration test coverage
+| Resource          | URL                                 |
+| ----------------- | ----------------------------------- |
+| Live API          | https://api.rifflog.scottstarks.dev |
+| API Documentation | [docs/api.md](docs/api.md)          |
 
 ---
 
-## Technology Stack
+## Screenshots
 
-| Technology              | Purpose                       |
-| ----------------------- | ----------------------------- |
-| Go                      | Backend language              |
-| Gin                     | HTTP routing and middleware   |
-| PostgreSQL              | Relational database           |
-| pgx                     | PostgreSQL driver             |
-| Docker & Docker Compose | Local development environment |
-| JWT                     | Authentication                |
-| bcrypt                  | Password hashing              |
-| golang-migrate          | Database migrations           |
+### API Documentation
+
+![API Documentation](./images/API%20doc%20screenshot.png)
+
+### Live HTTPS Endpoint
+
+![Live HTTPS Endpoint](./images/HTTPS%20screenshot.png)
+
+## Core Features
+
+### Authentication
+
+- User registration
+- Secure password hashing with bcrypt
+- JWT-based authentication
+- Protected API endpoints
+  
+### Practice Sessions
+
+- Create, update, and delete practice sessions
+- Filter sessions by skill and date range
+
+### Statistics
+
+* Total practice time
+* Session count
+* Most practiced skill
+* Longest session
 
 ---
 
@@ -50,26 +52,27 @@ I learned to play guitar when I was young but as life got busy with work, family
 
 The application follows a layered architecture to separate HTTP concerns, business logic, and data persistence.
 
-```text
-HTTP Request
-      │
-      ▼
-Gin Router
-      │
-      ▼
-Middleware (Authentication)
-      │
-      ▼
-Handler
-      │
-      ▼
-Service
-      │
-      ▼
-Repository
-      │
-      ▼
-PostgreSQL
+```mermaid
+flowchart TD
+
+Request["HTTP Request"]
+Router["Gin Router"]
+Middleware["JWT Middleware"]
+
+subgraph Backend["Go API"]
+    Handlers["Handlers"]
+    Services["Services"]
+    Repositories["Repositories"]
+end
+
+Database[("PostgreSQL")]
+
+Request --> Router
+Router --> Middleware
+Middleware --> Handlers
+Handlers --> Services
+Services --> Repositories
+Repositories --> Database
 ```
 
 Responsibilities are separated into:
@@ -85,18 +88,69 @@ Responsibilities are separated into:
 
 ```text
 cmd/
+    API entry point
+
 internal/
     auth/
-    bootstrap/
-    config/
-    database/
     handlers/
     middleware/
     models/
     repository/
     services/
+
 migrations/
+
 docs/
+
+images/
+```
+
+---
+
+## Technology Stack
+
+| Technology     | Purpose                       |
+| -------------- | ----------------------------- |
+| Go 1.25        | Backend language              |
+| Gin            | HTTP routing and middleware   |
+| PostgreSQL 17  | Relational database           |
+| pgx            | PostgreSQL driver             |
+| Docker Compose | Local development environment |
+| JWT            | Authentication                |
+| bcrypt         | Password hashing              |
+| golang-migrate | Database migrations           |
+| Nginx          | Reverse Proxy                 |
+| Let's Encrypt  | HTTPS                         |
+| DigitalOcean   | Hosting                       |
+
+---
+
+## Deployment
+
+```mermaid
+flowchart TD
+
+Client["Browser / API Client"]
+
+subgraph VPS["Ubuntu 24.04 VPS"]
+
+    Nginx["Nginx Reverse Proxy"]
+
+    subgraph Compose["Docker Compose"]
+
+        API["Go API (Gin)"]
+
+        DB[("PostgreSQL")]
+
+    end
+
+end
+
+Client -->|"HTTPS"| Nginx
+
+Nginx -->|"HTTP"| API
+
+API --> |SQL| DB
 ```
 
 ---
@@ -114,14 +168,14 @@ docs/
 
 During development, PostgreSQL runs in Docker while the Go API is run directly from the local development environment. This provides a consistent database environment while allowing fast compilation, debugging, and testing of the Go application.
 
-### Clone the repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/thetramp22/rifflog.git
 cd rifflog
 ```
 
-### Configure environment variables
+### 2. Configure environment variables
 
 ```bash
 cp .env.example .env
@@ -130,13 +184,13 @@ cp .env.test.example .env.test
 
 Update the values in `.env` to match your local environment.
 
-### Start the database
+### 3. Start the database
 
 ```bash
 docker compose up --build -d
 ```
 
-### Run database migrations
+### 4. Run database migrations
 
 Run the migrations using the same database credentials configured in your `.env` file.
 
@@ -147,7 +201,9 @@ migrate \
   up
 ```
 
-### Start the API
+### 5. Start the API
+
+Docker Compose starts PostgreSQL for local development. The API is run directly from the Go toolchain to provide faster build and debugging during development.
 
 ```bash
 go run ./cmd/api
@@ -195,40 +251,48 @@ Several design decisions were intentionally made while developing this project:
 
 ---
 
-## Future Improvements
+## Roadmap
 
-Possible future enhancements include:
+Planned Features:
+
+* React frontend
+* User-defined skills
+* CI/CD pipeline
+  
+Possible Improvements:
 
 * Refresh token support
 * Password reset workflow
 * OpenAPI (Swagger) documentation
-* CI/CD pipeline
 * Pagination for large result sets
 * Practice goals and streak tracking
-* Frontend client application
+
+---
+
+## Motivation
+
+I learned to play guitar when I was young, but as life became busier with work, family, and other responsibilities, I found it difficult to make time to practice. Years later, I wanted to return to playing but realized I had lost much of the technique and muscle memory I once had. RiffLog began as a way to bring structure and consistency back into my practice routine.
 
 ---
 
 ## What I Learned
 
-Building RiffLog provided practical experience with:
+The biggest lesson from this project was learning how individual backend concepts fit together into a complete system. Building the API required much more than implementing endpoints; it involved designing layered application architecture, securing requests with JWT authentication, structuring SQL repositories, writing integration tests, containerizing the application with Docker, and ultimately deploying it to a Linux VPS behind an Nginx reverse proxy with HTTPS. Seeing all of those pieces work together transformed many concepts that had previously felt isolated into a cohesive understanding of how production backend services are built and operated.
 
-* Designing RESTful APIs in Go
-* Layered application architecture
-* PostgreSQL schema design and SQL
-* JWT authentication and authorization
-* Writing middleware with Gin
-* Integration and unit testing
-* Docker-based local development
-* Database migrations
-* Structuring a maintainable Go project
+---
+
+## Challenges
+
+Building RiffLog involved more than implementing REST endpoints. Along the way I encountered and solved a number of real-world engineering problems, including:
+
+- Designing a layered architecture that remained easy to test and extend.
+- Securing endpoints with JWT authentication while keeping authorization centralized in middleware.
+- Managing PostgreSQL schema evolution through versioned database migrations.
+- Containerizing the application with Docker Compose for consistent development and deployment.
+- Deploying the application to a Linux VPS behind an Nginx reverse proxy with HTTPS certificates issued by Let's Encrypt.
 
 ---
 
 ## License
 
 This project is available under the MIT License.
-
-Quick Start
-Usage
-Contributing
