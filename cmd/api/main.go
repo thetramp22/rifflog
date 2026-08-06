@@ -45,6 +45,13 @@ func main() {
 	practiceSessionService := services.NewPracticeSessionService(practiceSessionRepo)
 	practiceSessionHandler := handlers.NewPracticeSessionHandler(practiceSessionService)
 
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"service":       "RiffLog API",
+			"version":       "1.0.0",
+			"documentation": "https://github.com/thetramp22/rifflog/blob/main/docs/api.md",
+		})
+	})
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",
