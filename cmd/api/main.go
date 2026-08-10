@@ -28,6 +28,7 @@ func main() {
 	log.Println("Connected to PostgreSQL")
 
 	router := gin.Default()
+	router.Use(middleware.CORS())
 
 	jwtService := auth.NewJWTService(config.JWTSecret())
 
