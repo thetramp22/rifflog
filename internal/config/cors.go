@@ -1,7 +1,15 @@
 package config
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
-func CORSAllowedOrigin() string {
-	return os.Getenv("CORS_ALLOWED_ORIGIN")
+func CORSAllowedOrigins() []string {
+	originsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
+	origins := strings.Split(originsStr, ",")
+	for i, item := range origins {
+		origins[i] = strings.TrimSpace(item)
+	}
+	return origins
 }
