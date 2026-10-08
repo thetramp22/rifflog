@@ -1,11 +1,12 @@
-# API Documentation
+# RiffLog API Documentation
 
 ## Overview
+
 The RiffLog API is a RESTful backend service for tracking guitar practice sessions. It allows users to register an account, authenticate using JSON Web Tokens (JWT), record practice sessions, view practice history, and retrieve summary statistics about their practice habits.
 
-The API is built with Go using the Gin web framework and follows a layered architecture consisting of HTTP handlers, services, and repositories backed by a PostgreSQL database. All endpoints communicate using JSON, and authenticated endpoints require a valid JWT Bearer token.
+The API is built with Go using the Gin web framework and uses PostgreSQL for persistent storage.
 
-The API currently supports the following features:
+### Available Features
 
 - User registration and authentication
 - JWT-protected endpoints
@@ -13,425 +14,500 @@ The API currently supports the following features:
 - Create, update, and delete practice sessions
 - List practice sessions with optional filtering
 - View aggregate practice statistics
+- Health and service information endpoints
 
-This document describes each available endpoint, the required request format, expected responses, and common error conditions to assist developers integrating with the API.
+## Base URLs
 
-## Base URL
+### Production
 
-By default, the development server listens on:
+```text
+https://api.rifflog.scottstarks.dev
+```
+
+### Local Development
 
 ```text
 http://localhost:8080
 ```
 
 ## Authentication
-Protected endpoints require a JSON Web Token (JWT) obtained from the `POST /login` endpoint.
+
+Protected endpoints require a JSON Web Token (JWT) obtained from `POST /login`.
 
 Include the token in the `Authorization` header using the Bearer authentication scheme:
 
-```text
+```http
 Authorization: Bearer <JWT>
 ```
 
-The authenticated user is determined from the JWT. Client requests should not include a user ID, as ownership is enforced by the server.
-## Endpoints
+The authenticated user's ID is derived from the JWT. Clients should not send a user ID when creating or modifying practice sessions.
 
-### Authentication
+## Common Error Format
 
-#### POST /register
+Unless otherwise noted, failed requests return JSON in the following format:
 
-##### Summary
-Creates a new Rifflog user.
+```json
+{
+  "error": "description of the error"
+}
+```
 
-##### Authentication
-None
+## Service Endpoints
 
-##### Request Headers
+### GET /
+
+Returns basic information about the API service.
+
+**Authentication:** None
+
+#### Success Response
+
+`200 OK`
+
+```json
+{
+  "service": "RiffLog API",
+  "version": "1.0.0",
+  "documentation": "https://github.com/thetramp22/rifflog/blob/main/docs/api.md"
+}
+```
+
+### GET /health
+
+Returns the health status of the API process.
+
+**Authentication:** None
+
+#### Success Response
+
+`200 OK`
+
+```json
+{
+  "status": "ok"
+}
+```
+
+## Authentication Endpoints
+
+### POST /register
+
+Creates a new RiffLog user account.
+
+**Authentication:** None
+
+#### Request Headers
+
 ```http
 Content-Type: application/json
 ```
 
-##### Request Body
-|Field              |Type               |Description                        |
-|:---               |:---               |:---                               |
-|email              |string             |User's email addresss              |
-|password           |string             |User's password                    |
+#### Request Body
 
-Example:
+| Field | Type | Description |
+| --- | --- | --- |
+| `email` | string | User's email address |
+| `password` | string | User's password |
+
+#### Example Request
+
 ```json
 {
-    "email": "jimmy_user@usermail.com",
-    "password": "jimmyRules3"
+  "email": "jimmy_user@usermail.com",
+  "password": "jimmyRules3"
 }
 ```
 
-##### Success Response
-**Status** `201 Created`
+#### Success Response
+
+`201 Created`
+
 ```json
 {
+  "id": 283,
+  "email": "jimmy_user@usermail.com",
+  "created_at": "2026-07-09T18:00:00Z"
+}
+```
+
+#### Error Responses
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Invalid user data |
+| `500` | Internal server error |
+
+### POST /login
+
+Authenticates a user and returns a JWT.
+
+**Authentication:** None
+
+#### Request Headers
+
+```http
+Content-Type: application/json
+```
+
+#### Request Body
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `email` | string | User's email address |
+| `password` | string | User's password |
+
+#### Example Request
+
+```json
+{
+  "email": "jimmy_user@usermail.com",
+  "password": "jimmyRules3"
+}
+```
+
+#### Success Response
+
+`200 OK`
+
+```json
+{
+  "token": "<JWT>",
+  "user": {
     "id": 283,
     "email": "jimmy_user@usermail.com",
     "created_at": "2026-07-09T18:00:00Z"
+  }
 }
 ```
 
-##### Error Responses
-|Status                 |Meaning                                    |
-|:---                   |:---                                       |
-|400                    |Invalid user data                          |
-|500                    |Internal server error                      |
+#### Error Responses
 
-#### POST /login
+| Status | Meaning |
+| --- | --- |
+| `400` | Invalid email or request data |
+| `401` | Invalid password |
+| `404` | User not found |
+| `500` | Internal server error |
 
-##### Summary
-Log in a user and issue an authentication token.
+## Skills
 
-##### Authentication
-None
+### GET /skills
 
-##### Request Headers
-```http
-Content-Type: application/json
-```
+Returns the list of practice skills available to users.
 
-##### Request Body
-|Field              |Type               |Description                        |
-|:---               |:---               |:---                               |
-|email              |string             |User's email addresss              |
-|password           |string             |User's password                    |
+**Authentication:** None
 
-Example:
-```json
-{
-    "email": "jimmy_user@usermail.com",
-    "password": "jimmyRules3"
-}
-```
+#### Success Response
 
-##### Success Response
-**Status** `200 OK`
-```json
-{
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30",
-    "user": {
-        "id": 283,
-        "email": "jimmy_user@usermail.com",
-        "created_at": "2026-07-09T18:00:00Z"
-    }
-}
-```
+`200 OK`
 
-##### Error Responses
-|Status                 |Meaning                                    |
-|:---                   |:---                                       |
-|400                    |Invalid email address                      |
-|401                    |Invalid password                           |
-|404                    |User not found                             |
-|500                    |Internal server error                      |
-
-### Skills
-
-#### GET /skills
-
-##### Summary
-Retrieves a list of skills to practice during sessions.
-
-##### Authentication
-None
-
-##### Request Headers
-```http
-Content-Type: application/json
-```
-
-##### Request Body
-None
-
-##### Success Response
-**Status** `200 OK`
 ```json
 [
-    {
-        "id": 1,
-        "name": "Ear Training",
-        "description": "Try playing to identify chords and melodies by ear.",
-        "created_at": "2026-07-09T18:00:00Z"
-    },
-    {
-        "id": 2,
-        "name": "Scales",
-        "description": "Memorize note locations and scale patterns.",
-        "created_at": "2026-07-09T18:00:00Z"
-    }
+  {
+    "id": 1,
+    "name": "Ear Training",
+    "description": "Try playing to identify chords and melodies by ear.",
+    "created_at": "2026-07-09T18:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "Scales",
+    "description": "Memorize note locations and scale patterns.",
+    "created_at": "2026-07-09T18:00:00Z"
+  }
 ]
 ```
 
-##### Error Responses
-|Status                 |Meaning                                    |
-|:---                   |:---                                       |
-|500                    |Internal server error                      |
+#### Error Responses
 
-### Practice Sessions
+| Status | Meaning |
+| --- | --- |
+| `500` | Internal server error |
 
-#### POST /practice-sessions
+# Practice Sessions
 
-##### Summary
-Creates a new practice session for the authenticated user.
+All practice-session endpoints are protected by JWT authentication and are prefixed with `/api`.
 
-##### Authentication
-Required (Bearer Token)
+## POST /api/practice-sessions
 
-##### Request Headers
+Creates a practice session for the authenticated user.
+
+**Authentication:** Required
+
+#### Request Headers
+
 ```http
 Authorization: Bearer <JWT>
 Content-Type: application/json
 ```
 
-##### Request Body
-|Field              |Type               |Description                        |
-|:---               |:---               |:---                               |
-|skill_id           |integer            |ID of the practiced skill          |
-|duration_minutes   |integer            |Length of the session in minutes   |
-|practiced_at       |string (RFC3339)   |When the session occured           |
-|notes              |string             |Optional practice notes            |
+#### Request Body
 
-Example:
+| Field | Type | Description |
+| --- | --- | --- |
+| `skill_id` | integer | ID of the practiced skill |
+| `duration_minutes` | integer | Length of the session in minutes |
+| `practiced_at` | string (RFC3339) | When the session occurred |
+| `notes` | string | Optional practice notes |
+
+#### Example Request
+
 ```json
 {
-    "skill_id": 2,
-    "duration_minutes": 30,
-    "practiced_at": "2026-07-09T18:00:00Z",
-    "notes": "Worked on scales"
+  "skill_id": 2,
+  "duration_minutes": 30,
+  "practiced_at": "2026-07-09T18:00:00Z",
+  "notes": "Worked on scales"
 }
 ```
 
-##### Success Response
-**Status:** `201 Created`
+#### Success Response
+
+`201 Created`
+
 ```json
 {
-    "id": 2839,
+  "id": 2839,
+  "skill_id": 2,
+  "duration_minutes": 30,
+  "notes": "Worked on scales",
+  "practiced_at": "2026-07-09T18:00:00Z",
+  "created_at": "2026-07-09T19:00:00Z",
+  "user_id": 22
+}
+```
+
+#### Error Responses
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Invalid request or session data |
+| `401` | Missing or invalid authentication |
+| `404` | Referenced skill not found |
+| `500` | Internal server error |
+
+## GET /api/practice-sessions
+
+Returns practice sessions belonging to the authenticated user.
+
+**Authentication:** Required
+
+### Query Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `skill` | integer | Return only sessions for the specified skill |
+| `from` | date | Return sessions on or after this date |
+| `to` | date | Return sessions on or before this date |
+
+The `to` date is treated as inclusive.
+
+#### Example
+
+```text
+GET /api/practice-sessions?skill=2&from=2026-07-01&to=2026-07-31
+```
+
+#### Success Response
+
+`200 OK`
+
+```json
+[
+  {
+    "id": 3748,
     "skill_id": 2,
-    "duration_minutes": 30,
-    "notes": "Worked on scales",
+    "skill_name": "Scales",
+    "skill_description": "Memorize note locations and scale patterns.",
+    "duration_minutes": 25,
+    "notes": "Scales practice",
     "practiced_at": "2026-07-09T18:00:00Z",
     "created_at": "2026-07-09T19:00:00Z",
     "user_id": 22
-}
-```
-
-##### Error Responses
-|Status                 |Meaning                                    |
-|:---                   |:---                                       |
-|400                    |Invalid session data                       |
-|401                    |Missing or invalid authentication token    |
-|404                    |Referenced skill not found                 |
-|500                    |Internal server error                      |
-
-#### GET /practice-sessions
-
-##### Summary
-Retrieve practice sessions for authenticated user.  Can be filtered with query parameters.
-
-##### Authentication
-Required (Bearer Token)
-
-##### Request Headers
-```http
-Authorization: Bearer <JWT>
-Content-Type: application/json
-```
-
-##### Request Query Parameters
-|Parameter          |Type               |Description                        |
-|:---               |:---               |:---                               |
-|skill              |integer            |Only return sessions for this skill|
-|from               |date               |Sessions on or after this date     |
-|to                 |date               |Sessions on or before this date    |
-
-##### Request Body
-None
-
-##### Success Response
-**Status** `200 OK`
-```json
-[
-    {
-        "id": 3748,
-        "skill_id": 2,
-        "skill_name": "Scales",
-        "skill_description": "Memorize note locations and scale patterns.",
-        "duration_minutes": 25,
-        "notes": "Scales practice, my fingers hurt",
-        "practiced_at": "2026-07-09T18:00:00Z",
-        "created_at": "2026-07-09T19:00:00Z",
-        "user_id": "22"
-    }
-    {
-        "id": 3921,
-        "skill_id": 2,
-        "skill_name": "Scales",
-        "skill_description": "Memorize note locations and scale patterns.",
-        "duration_minutes": 25,
-        "notes": "More scales practice, my fingers hurt a little less",
-        "practiced_at": "2026-08-09T18:00:00Z",
-        "created_at": "2026-08-09T19:00:00Z",
-        "user_id": 22
-    }
+  },
+  {
+    "id": 3921,
+    "skill_id": 2,
+    "skill_name": "Scales",
+    "skill_description": "Memorize note locations and scale patterns.",
+    "duration_minutes": 25,
+    "notes": "More scales practice",
+    "practiced_at": "2026-07-15T18:00:00Z",
+    "created_at": "2026-07-15T19:00:00Z",
+    "user_id": 22
+  }
 ]
 ```
 
-##### Error Responses
-|Status                 |Meaning                                    |
-|:---                   |:---                                       |
-|400                    |Invalid query parameters                   |
-|401                    |Missing or invalid authentication token    |
-|404                    |User invalid or not found                  |
-|500                    |Internal server error                      |
+#### Error Responses
 
-#### GET /practice-sessions/stats
+| Status | Meaning |
+| --- | --- |
+| `400` | Invalid query parameters |
+| `401` | Missing or invalid authentication |
+| `500` | Internal server error |
 
-##### Summary
-Retrieve a set of statistics for the authenticate user.
-Statistics reported:
+## GET /api/practice-sessions/stats
+
+Returns aggregate practice statistics for the authenticated user.
+
+**Authentication:** Required
+
+### Statistics
+
 - Total minutes practiced
-- Total sessions practiced
-- Most practiced skill (calculated by minutes)
-- Longest session practiced
+- Total number of sessions
+- Most practiced skill by total minutes
+- Longest practice session
 
-##### Authentication
-Required (Bearer Token)
+#### Success Response
 
-##### Request Headers
-```http
-Authorization: Bearer <JWT>
-Content-Type: application/json
-```
-
-##### Request Body
-None
-
-##### Success Response
-**Status** `200 OK`
-```json
-{
-    "total_minutes": 384,
-    "total_sessions": 12,
-    "most_practiced_skill": {
-        "name": "Scales",
-        "total_minutes": 98
-    },
-    "longest_session": 43
-}
-```
-
-##### Error Responses
-|Status                 |Meaning                                    |
-|:---                   |:---                                       |
-|401                    |Missing or invalid authentication token    |
-|500                    |Internal server error                      |
-
-#### PUT /practice-sessions/{id}
-
-##### Summary
-Update a session previously created by the authenticated user.
-
-##### Authentication
-Required (Bearer Token)
-
-##### Request Headers
-```http
-Authorization: Bearer <JWT>
-Content-Type: application/json
-```
-
-##### Request Path Parameters
-|Parameter                  |Description                                    |
-|:---                       |:---                                           |
-|id                         |Practice session ID                            |
-
-##### Request Body
-|Field              |Type               |Description                        |
-|:---               |:---               |:---                               |
-|skill_id           |integer            |ID of the practiced skill          |
-|duration_minutes   |integer            |Length of the session in minutes   |
-|practiced_at       |string (RFC3339)   |When the session occured           |
-|notes              |string             |Optional practice notes            |
-
-Example:
-```json
-{
-    "skill_id": 2,
-    "duration_minutes": 30,
-    "practiced_at": "2026-07-09T18:00:00Z",
-    "notes": "Worked on scales"
-}
-```
-
-##### Success Response
-**Status** `200 OK`
-```json
-{
-    "id": 2839,
-    "skill_id": 2,
-    "duration_minutes": 30,
-    "notes": "Worked on scales",
-    "practiced_at": "2026-07-09T18:00:00Z",
-    "created_at": "2026-07-09T19:00:00Z",
-    "user_id": 22
-}
-```
-
-##### Error Responses
-|Status                 |Meaning                                    |
-|:---                   |:---                                       |
-|400                    |Invalid or missing id parameter            |
-|401                    |Missing or invalid authentication token    |
-|404                    |Requested data not found                   |
-|500                    |Internal server error                      |
-
-#### DELETE /practice-sessions/{id}
-
-##### Summary
-Delete a session previously created by the authenticated user.
-
-##### Authentication
-Required (Bearer Token)
-
-##### Request Headers
-```http
-Authorization: Bearer <JWT>
-Content-Type: application/json
-```
-
-##### Request Path Parameters
-|Parameter                  |Description                                    |
-|:---                       |:---                                           |
-|id                         |Practice session ID                            |
-
-##### Request Body
-None
-
-##### Success Response
-**Status** `200 OK`
-```json
-{
-    "message": "practice session 3842 deleted"
-}
-```
-
-##### Error Responses
-|Status                 |Meaning                                    |
-|:---                   |:---                                       |
-|400                    |Invalid or missing id parameter            |
-|401                    |Missing or invalid authentication token    |
-|404                    |Requested data not found                   |
-|500                    |Internal server error                      |
-
-## Error Response Format
-
-Unless otherwise noted, failed requests return a JSON response in the following format:
+`200 OK`
 
 ```json
 {
-    "error": "description of the error"
+  "total_minutes": 384,
+  "total_sessions": 12,
+  "most_practiced_skill": {
+    "name": "Scales",
+    "total_minutes": 98
+  },
+  "longest_session": 43
 }
+```
+
+If the user has no practice sessions, `most_practiced_skill` is `null`:
+
+```json
+{
+  "total_minutes": 0,
+  "total_sessions": 0,
+  "most_practiced_skill": null,
+  "longest_session": 0
+}
+```
+
+#### Error Responses
+
+| Status | Meaning |
+| --- | --- |
+| `401` | Missing or invalid authentication |
+| `500` | Internal server error |
+
+## PUT /api/practice-sessions/{id}
+
+Updates a practice session belonging to the authenticated user.
+
+**Authentication:** Required
+
+### Path Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `id` | integer | Practice session ID |
+
+### Request Body
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `skill_id` | integer | ID of the practiced skill |
+| `duration_minutes` | integer | Length of the session in minutes |
+| `practiced_at` | string (RFC3339) | When the session occurred |
+| `notes` | string | Optional practice notes |
+
+#### Example Request
+
+```json
+{
+  "skill_id": 2,
+  "duration_minutes": 30,
+  "practiced_at": "2026-07-09T18:00:00Z",
+  "notes": "Worked on scales"
+}
+```
+
+#### Success Response
+
+`200 OK`
+
+```json
+{
+  "id": 2839,
+  "skill_id": 2,
+  "duration_minutes": 30,
+  "notes": "Worked on scales",
+  "practiced_at": "2026-07-09T18:00:00Z",
+  "created_at": "2026-07-09T19:00:00Z",
+  "user_id": 22
+}
+```
+
+#### Error Responses
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Invalid request, session data, or ID |
+| `401` | Missing or invalid authentication |
+| `404` | Practice session, user, or skill not found |
+| `500` | Internal server error |
+
+If the specified practice session belongs to another user, the API also returns `404` rather than exposing the existence of another user's resource.
+
+## DELETE /api/practice-sessions/{id}
+
+Deletes a practice session belonging to the authenticated user.
+
+**Authentication:** Required
+
+### Path Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `id` | integer | Practice session ID |
+
+#### Success Response
+
+`200 OK`
+
+```json
+{
+  "message": "practice session 3842 deleted"
+}
+```
+
+#### Error Responses
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Invalid or missing ID |
+| `401` | Missing or invalid authentication |
+| `404` | Practice session not found |
+| `500` | Internal server error |
+
+If the specified practice session belongs to another user, the API returns `404`.
+
+## Authentication and Authorization Notes
+
+The API uses JWT authentication to establish the identity of the requesting user.
+
+For protected practice-session endpoints:
+
+1. The JWT middleware validates the token.
+2. The authenticated user ID is placed into the request context.
+3. The handler retrieves that user ID from the context.
+4. Services and repositories use that ID when operating on user-owned resources.
+
+This prevents clients from selecting another user's ID in the request body or URL.
+
+## Example Workflow
+
+A typical client workflow is:
+
+1. `POST /register` to create an account.
+2. `POST /login` to authenticate and receive a JWT.
+3. `GET /skills` to retrieve available practice skills.
+4. Include the JWT as a Bearer token for protected requests.
+5. `POST /api/practice-sessions` to record practice.
+6. `GET /api/practice-sessions` to retrieve practice history.
+7. `GET /api/practice-sessions/stats` to retrieve aggregate statistics.
+8. Use `PUT` or `DELETE` on a practice-session resource as needed.
